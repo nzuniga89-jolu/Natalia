@@ -1,0 +1,10 @@
+{
+  "name": "Natalia — Asistente personal",
+  "short_name": "Natalia",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f3fb",
+  "theme_color": "#6d5ce7",
+  "lang": "es-CL",
+  "icons": []
+}

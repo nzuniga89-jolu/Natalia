@@ -1,0 +1,51 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6d5ce7">
+<link rel="manifest" href="manifest.json"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>Natalia</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f3fb;color:#292536;font-family:system-ui,sans-serif}
+header{background:linear-gradient(135deg,#6d5ce7,#8d72f2);color:white;padding:26px 18px;border-radius:0 0 28px 28px}
+h1{margin:0;font-size:32px}header p{margin:5px 0 0;opacity:.9}main{max-width:760px;margin:auto;padding:14px 14px 90px}
+nav{display:flex;gap:7px;overflow:auto;margin-bottom:8px}nav button{border:0;border-radius:99px;padding:10px 14px;background:#e8e4f8;color:#51467d;font-weight:800;white-space:nowrap}nav button.active{background:#6d5ce7;color:white}
+section{display:none}.activeSection{display:block}.card{background:white;border-radius:20px;padding:16px;margin:10px 0;box-shadow:0 5px 18px #32245c12}
+.item{padding:12px 0;border-bottom:1px solid #eee;line-height:1.4}.item:last-child{border:0}.date{font-size:12px;text-transform:uppercase;color:#6d5ce7;font-weight:900}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#ffe7ed;color:#a51f3d;font-size:12px;font-weight:900}
+button.action{border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;color:white;font-weight:800;margin-top:8px}
+.add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}.small{color:#777;font-size:13px}
+.fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border:0;border-radius:50%;background:#6d5ce7;color:white;font-size:24px;box-shadow:0 8px 25px #33236a40}
+</style></head><body>
+<header><h1>💜 Natalia</h1><p>Tu asistente personal</p></header><main>
+<nav><button class="active" onclick="tab('hoy',this)">Hoy</button><button onclick="tab('hijas',this)">Hijas</button><button onclick="tab('compras',this)">Compras</button><button onclick="tab('recordatorios',this)">Recordatorios</button></nav>
+
+<section id="hoy" class="activeSection">
+<div class="card"><span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span>
+<p><b>Pedir estacionamiento</b></p><p class="small">Natalia, son las 7:59. Recuerda pedir estacionamiento.</p>
+<button class="action" onclick="speak(DATA.parking.message)">🔊 Probar voz</button></div>
+<div class="card"><h2>🎒 Colegio — agosto</h2><div id="schoolHome"></div></div>
+<div class="card"><h2>👶 Sala cuna — agosto</h2><div id="nurseryHome"></div></div>
+</section>
+
+<section id="hijas">
+<div class="card"><h2>🎒 Colegio</h2><div id="school"></div></div>
+<div class="card"><h2>👶 Sala cuna</h2><div id="nursery"></div></div>
+<div class="card"><h2>🧳 Rutina sala cuna</h2><div id="routine"></div></div>
+</section>
+
+<section id="compras"><div class="card"><h2>🛒 Supermercado</h2><div id="shopping"></div>
+<div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button></div>
+<p class="small">Puedes cambiar esta lista cuando quieras.</p></div></section>
+
+<section id="recordatorios"><div class="card"><h2>🔔 Recordatorios</h2>
+<div class="item"><span class="badge">IMPORTANTE</span><br>Jueves y viernes a las 07:59 — pedir estacionamiento.</div>
+<p class="small">Esta es la primera versión. La siguiente etapa es conectar estos recordatorios con notificaciones y voz del teléfono.</p>
+</div></section>
+</main><button class="fab" onclick="speak('Hola Natalia. Esta es tu asistente.')">🔊</button>
+<script>
+const DATA={"appName": "Natalia", "parking": {"days": ["jueves", "viernes"], "time": "07:59", "important": true, "message": "Natalia, son las 7:59. Recuerda pedir estacionamiento."}, "shopping": ["cuscús", "fideos largos", "dulce membrillo light", "pan integral"], "school_august": [["3 ago", "Inicio evaluaciones estandarizadas de Inglés Tradicional y evaluaciones externas orales."], ["5 ago", "Simulacro de refugio."], ["10 ago", "Inicio Sociograma 2 BraveUP!."], ["15 ago", "Feriado — Asunción de la Virgen."], ["17 ago", "Término Sociograma 2 BraveUP! y Digital Citizenship Week."], ["20 ago", "Ensayo PAES DEMRE IV medio."], ["21 ago", "Ensayo PAES DEMRE IV medio y Green Day: polera o accesorio verde."], ["24 ago", "Semana de Evaluación Unidad 3, Lenguaje y Matemática 1° Básico a II Medio. Semana de las Ciencias."], ["28 ago", "Jeans Day CAMPUR general de estudiantes."]], "nursery_august": [["10 ago", "Traer un objeto tecnológico desde el hogar, dentro de un estuche."], ["12 ago", "Camión de juguete tamaño mediano con nombre para jugar con arena."], ["13 ago", "Cumpleaños de Constancio N°2."], ["14 ago", "Día de la familia — horario a confirmar."], ["18 ago", "Fruta picada para receta, en recipiente pequeño con tapa y nombre."], ["21 ago", "Venir desde el hogar con vestimenta en blanco y negro."], ["25 ago", "1 espejo mediano con nombre."], ["26 ago", "Día de la técnico en párvulos — enviar colación para compartir a las 15:30."], ["28 ago", "Reunión técnica — retiro a las 15:30."]], "nursery_daily": ["Cepillo dental + gel dentífrico", "Bolsa para ropa sucia", "7 pañales diarios", "Babero lavable con mangas"], "nursery_clothing": ["2 o 3 mudas completas según clima"], "nursery_medications": ["Antipirético SOS", "Termómetro", "Crema para coceduras"]};
+function tab(id,b){document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));document.getElementById(id).classList.add('activeSection');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
+function speak(t){if(!('speechSynthesis'in window)){alert('La voz no está disponible en este navegador.');return}speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang='es-CL';u.rate=.95;speechSynthesis.speak(u)}
+function events(arr){return arr.map(x=>'<div class="item"><div class="date">'+x[0]+'</div>'+x[1]+'</div>').join('')}
+function list(){return JSON.parse(localStorage.getItem('natShopping')||JSON.stringify(DATA.shopping))}
+function render(){document.getElementById('school').innerHTML=events(DATA.school_august);document.getElementById('schoolHome').innerHTML=events(DATA.school_august);document.getElementById('nursery').innerHTML=events(DATA.nursery_august);document.getElementById('nurseryHome').innerHTML=events(DATA.nursery_august);document.getElementById('routine').innerHTML=DATA.nursery_daily.concat(DATA.nursery_clothing,DATA.nursery_medications).map(x=>'<div class="item">• '+x+'</div>').join('');document.getElementById('shopping').innerHTML=list().map((x,i)=>'<div class="item"><label><input type="checkbox" onchange="del('+i+')"> '+x+'</label></div>').join('')}
+function addItem(){let i=document.getElementById('newItem'),v=i.value.trim();if(!v)return;let l=list();l.push(v);localStorage.setItem('natShopping',JSON.stringify(l));i.value='';render()}function del(i){let l=list();l.splice(i,1);localStorage.setItem('natShopping',JSON.stringify(l));render()}render();
+</script><script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js")}</script></body></html>
