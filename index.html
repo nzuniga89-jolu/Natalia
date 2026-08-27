@@ -251,14 +251,18 @@ lines.push('• '+e[2]);
 });
 
 }else{
+  let mensaje='No tienes actividades registradas para '+label+
+    (category?' en '+category:'')+'.';
 
-lines.push(
-'No tienes actividades registradas para '+
-label+
-(category?' en '+category:'')+
-'.'
-);
+  if(!category && iso(from)===iso(to)){
+    let reminder=parkingFor(from);
 
+    if(reminder){
+      mensaje=reminder;
+    }
+  }
+
+  lines.push(mensaje);
 }
 
 /* RECORDATORIOS */
