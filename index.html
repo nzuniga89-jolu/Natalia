@@ -147,14 +147,7 @@ if(from && to && iso(from)===iso(to)){
     html:lines.join('<br>')
   };
 }
-if(/proxima semana|siguiente semana/.test(s)){from=new Date(d);from.setDate(d.getDate()+1);to=new Date(d);to.setDate(d.getDate()+7);label='los próximos 7 días';}
-else if(/esta semana/.test(s)){from=new Date(d);from.setDate(d.getDate()-((d.getDay()+6)%7));to=new Date(from);to.setDate(from.getDate()+6);label='esta semana';}
-else if(/manana/.test(s)){from=new Date(d);from.setDate(d.getDate()+1);to=new Date(from);label='mañana';}
-else {from=d;to=d;label='hoy';}
-if(/colegio/.test(s))category='colegio';if(/sala cuna|guarderia|jardin/.test(s))category='sala cuna';
-let ev=eventsForDates(from,to,category);let lines=[];if(ev.length){let last='';ev.forEach(e=>{if(e[0]!==last){lines.push('<div class="date">'+fmtDate(dateObj(e[0]))+'</div>');last=e[0]}lines.push('• '+e[2]);});}else lines.push('No tienes actividades registradas para '+label+(category?' en '+category:'')+'.');
-if(label==='hoy'&&!category){let p=parkingFor(d);if(p)lines.push('• '+p)}
-return {text:'Para '+label+': '+lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),html:lines.join('<br>')};}
+
 function askNatalia(){let q=document.getElementById('question').value.trim();if(!q)return;let a=buildAnswer(q),box=document.getElementById('answer');box.style.display='block';box.innerHTML=a.html;speak(a.text)}
 let recognition=null;
 function startListening(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('El reconocimiento de voz no está disponible en este navegador. Puedes escribir la pregunta.');return}if(recognition){recognition.stop();return}recognition=new SR();recognition.lang='es-CL';recognition.interimResults=false;recognition.maxAlternatives=1;let mic=document.getElementById('mic');mic.classList.add('listening');recognition.onresult=e=>{document.getElementById('question').value=e.results[0][0].transcript;askNatalia()};recognition.onerror=()=>{};recognition.onend=()=>{mic.classList.remove('listening');recognition=null};recognition.start()}
