@@ -132,14 +132,14 @@ function buildAnswer(q){
       '.'
     );
   }
+// Revisar recordatorios para cualquier día consultado
+if(from && to && iso(from)===iso(to)){
+  let p=parkingFor(from);
 
-  // Estacionamiento si corresponde
-  if(from && to && iso(from)===iso(to)){
-    let p=parkingFor(from);
-    if(p && !category){
-      lines.push('• '+p);
-    }
+  if(p){
+    lines.push('• '+p);
   }
+}
 
   return {
     text:'Para '+label+': '+
