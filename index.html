@@ -575,6 +575,14 @@ const q=document.getElementById('question').value.trim();
 
 if(!q)return;
 
+/* Si el usuario escribió el recordatorio o la voz quedó en el cuadro,
+   el botón Preguntar también debe guardarlo. */
+if(tryAddSpokenEvent(q)){
+  render();
+  document.getElementById('question').value='';
+  return;
+}
+
 const a=buildAnswer(q);
 const box=document.getElementById('answer');
 
@@ -614,6 +622,9 @@ document.getElementById('question').value=transcript;
 
 if(!tryAddSpokenEvent(transcript)){
   askNatalia();
+}else{
+  render();
+  document.getElementById('question').value='';
 }
 };
 
