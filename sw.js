@@ -27,16 +27,17 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Para index.html, buscar primero la versión nueva de Internet
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        if (event.request.method === 'GET') {
           const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-  }
+          caches.open(CACHE).then(cache => {
+            cache.put(event.request, copy);
+          });
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
 });
