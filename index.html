@@ -39,7 +39,114 @@ function iso(d){return d.toISOString().slice(0,10)}
 function today(){let d=new Date();d.setHours(12,0,0,0);return d}
 function eventsForDates(from,to,category){return DATA.events.filter(e=>{let d=dateObj(e[0]);return d>=from&&d<=to&&(!category||e[1].toLowerCase()===category)}).sort((a,b)=>a[0].localeCompare(b[0]))}
 function parkingFor(d){return DATA.parking.days.includes(d.getDay())?'Además, a las 07:59 debes pedir estacionamiento.':''}
-function buildAnswer(q){let s=q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');let d=today(),from,to,label='hoy',category=null;
+function buildAnswer(q){
+  let s=q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  let d=today(),from,to,label='hoy',category=null;
+
+  const dias={
+    domingo:0,
+    lunes:1,
+    martes:2,
+    miercoles:3,
+    jueves:4,
+    viernes:5,
+    sabado:6
+  };
+
+  if(/proxima semana|siguiente semana/.test(s)){
+    from=new Date(d);
+    from.setDate(d.getDate()+1);
+    to=new Date(d);
+    to.setDate(d.getDate()+7);
+    label='los próximos 7 días';
+
+  }else if(/esta semana/.test(s)){
+    from=new Date(d);
+    from.setDate(d.getDate()-((d.getDay()+6)%7));
+    to=new Date(from);
+    to.setDate(from.getDate()+6);
+    label='esta semana';
+
+  }else if(/manana/.test(s)){
+    from=new Date(d);
+    from.setDate(d.getDate()+1);
+    to=new Date(from);
+    label='mañana';
+
+  }else{
+    // Detectar días de la semana: lunes, martes, miércoles, etc.
+    let diaEncontrado=null;
+
+    for(let nombre in dias){
+      if(s.includes(nombre)){
+        diaEncontrado=nombre;
+        break;
+      }
+    }
+
+    if(diaEncontrado){
+      let objetivo=dias[diaEncontrado];
+      let actual=d.getDay();
+      let diferencia=(objetivo-actual+7)%7;
+
+      // Si pregunta por el mismo día, mostrar hoy
+      if(diferencia===0){
+        from=new Date(d);
+        to=new Date(d);
+        label='hoy';
+      }else{
+        from=new Date(d);
+        from.setDate(d.getDate()+diferencia);
+        to=new Date(from);
+        label=diaEncontrado;
+      }
+    }else{
+      from=d;
+      to=d;
+      label='hoy';
+    }
+  }
+
+  if(/colegio/.test(s)) category='colegio';
+  if(/sala cuna|guarderia|jardin/.test(s)) category='sala cuna';
+
+  let ev=eventsForDates(from,to,category);
+  let lines=[];
+
+  if(ev.length){
+    let last='';
+    ev.forEach(e=>{
+      if(e[0]!==last){
+        lines.push(
+          '<div class="date">'+fmtDate(dateObj(e[0]))+'</div>'
+        );
+        last=e[0];
+      }
+      lines.push('• '+e[2]);
+    });
+  }else{
+    lines.push(
+      'No tienes actividades registradas para '+
+      label+
+      (category?' en '+category:'')+
+      '.'
+    );
+  }
+
+  // Estacionamiento si corresponde
+  if(from && to && iso(from)===iso(to)){
+    let p=parkingFor(from);
+    if(p && !category){
+      lines.push('• '+p);
+    }
+  }
+
+  return {
+    text:'Para '+label+': '+
+      lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),
+    html:lines.join('<br>')
+  };
+}
 if(/proxima semana|siguiente semana/.test(s)){from=new Date(d);from.setDate(d.getDate()+1);to=new Date(d);to.setDate(d.getDate()+7);label='los próximos 7 días';}
 else if(/esta semana/.test(s)){from=new Date(d);from.setDate(d.getDate()-((d.getDay()+6)%7));to=new Date(from);to.setDate(from.getDate()+6);label='esta semana';}
 else if(/manana/.test(s)){from=new Date(d);from.setDate(d.getDate()+1);to=new Date(from);label='mañana';}
