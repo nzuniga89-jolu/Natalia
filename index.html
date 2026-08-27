@@ -26,133 +26,421 @@ button.action{border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;c
 <section id="compras"><div class="card"><h2>🛒 Supermercado</h2><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button></div><p class="small">Puedes cambiar esta lista cuando quieras.</p></div></section>
 <section id="recordatorios"><div class="card"><h2>🔔 Recordatorios</h2><div class="item"><span class="badge">IMPORTANTE</span><br>Jueves y viernes a las 07:59 — pedir estacionamiento.</div><p class="small">Ahora Natalia también puede responder preguntas por voz o texto sobre tus actividades.</p></div></section>
 </main><button class="fab" onclick="startListening()" aria-label="Hablar con Natalia">🎙️</button>
-<script>
-const DATA={appName:'Natalia',parking:{days:[4,5],time:'07:59',important:true,message:'Natalia, son las 7:59. Recuerda pedir estacionamiento.'},shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],events:[
-['2026-08-03','Colegio','Inicio evaluaciones estandarizadas de Inglés Tradicional y evaluaciones externas orales.'],['2026-08-05','Colegio','Simulacro de refugio.'],['2026-08-10','Colegio','Inicio Sociograma 2 BraveUP!.'],['2026-08-15','Colegio','Feriado — Asunción de la Virgen.'],['2026-08-17','Colegio','Término Sociograma 2 BraveUP! y Digital Citizenship Week.'],['2026-08-20','Colegio','Ensayo PAES DEMRE IV medio.'],['2026-08-21','Colegio','Ensayo PAES DEMRE IV medio y Green Day: polera o accesorio verde.'],['2026-08-24','Colegio','Semana de Evaluación Unidad 3, Lenguaje y Matemática 1° Básico a II Medio. Semana de las Ciencias.'],['2026-08-28','Colegio','Jeans Day CAMPUR general de estudiantes.'],
-['2026-08-10','Sala cuna','Traer un objeto tecnológico desde el hogar, dentro de un estuche.'],['2026-08-12','Sala cuna','Camión de juguete tamaño mediano con nombre para jugar con arena.'],['2026-08-13','Sala cuna','Cumpleaños de Constancio N°2.'],['2026-08-14','Sala cuna','Día de la familia — horario a confirmar.'],['2026-08-18','Sala cuna','Fruta picada para receta, en recipiente pequeño con tapa y nombre.'],['2026-08-21','Sala cuna','Venir desde el hogar con vestimenta en blanco y negro.'],['2026-08-25','Sala cuna','1 espejo mediano con nombre.'],['2026-08-26','Sala cuna','Día de la técnico en párvulos — enviar colación para compartir a las 15:30.'],['2026-08-28','Sala cuna','Reunión técnica — retiro a las 15:30.']],
-nursery_daily:['Cepillo dental + gel dentífrico','Bolsa para ropa sucia','7 pañales diarios','Babero lavable con mangas'],nursery_clothing:['2 o 3 mudas completas según clima'],nursery_medications:['Antipirético SOS','Termómetro','Crema para coceduras']};
-function tab(id,b){document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));document.getElementById(id).classList.add('activeSection');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
-function speak(t){if(!('speechSynthesis'in window)){alert('La voz no está disponible en este navegador.');return}speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang='es-CL';u.rate=.95;speechSynthesis.speak(u)}
-function dateObj(s){return new Date(s+'T12:00:00')}
-function fmtDate(d){return d.toLocaleDateString('es-CL',{day:'numeric',month:'long'})}
-function iso(d){return d.toISOString().slice(0,10)}
-function today(){let d=new Date();d.setHours(12,0,0,0);return d}
-function eventsForDates(from,to,category){return DATA.events.filter(e=>{let d=dateObj(e[0]);return d>=from&&d<=to&&(!category||e[1].toLowerCase()===category)}).sort((a,b)=>a[0].localeCompare(b[0]))}
-function parkingFor(d){return DATA.parking.days.includes(d.getDay())?'Además, a las 07:59 debes pedir estacionamiento.':''}
+
+  <script>
+const DATA={
+appName:'Natalia',
+parking:{
+days:[4,5],
+time:'07:59',
+important:true,
+message:'Natalia, son las 7:59. Recuerda pedir estacionamiento.'
+},
+shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],
+events:[
+['2026-08-03','Colegio','Inicio evaluaciones estandarizadas de Inglés Tradicional y evaluaciones externas orales.'],
+['2026-08-05','Colegio','Simulacro de refugio.'],
+['2026-08-10','Colegio','Inicio Sociograma 2 BraveUP!.'],
+['2026-08-15','Colegio','Feriado — Asunción de la Virgen.'],
+['2026-08-17','Colegio','Término Sociograma 2 BraveUP! y Digital Citizenship Week.'],
+['2026-08-20','Colegio','Ensayo PAES DEMRE IV medio.'],
+['2026-08-21','Colegio','Ensayo PAES DEMRE IV medio y Green Day: polera o accesorio verde.'],
+['2026-08-24','Colegio','Semana de Evaluación Unidad 3, Lenguaje y Matemática 1° Básico a II Medio. Semana de las Ciencias.'],
+['2026-08-28','Colegio','Jeans Day CAMPUR general de estudiantes.'],
+
+['2026-08-10','Sala cuna','Traer un objeto tecnológico desde el hogar, dentro de un estuche.'],
+['2026-08-12','Sala cuna','Camión de juguete tamaño mediano con nombre para jugar con arena.'],
+['2026-08-13','Sala cuna','Cumpleaños de Constancio N°2.'],
+['2026-08-14','Sala cuna','Día de la familia — horario a confirmar.'],
+['2026-08-18','Sala cuna','Fruta picada para receta, en recipiente pequeño con tapa y nombre.'],
+['2026-08-21','Sala cuna','Venir desde el hogar con vestimenta en blanco y negro.'],
+['2026-08-25','Sala cuna','1 espejo mediano con nombre.'],
+['2026-08-26','Sala cuna','Día de la técnico en párvulos — enviar colación para compartir a las 15:30.'],
+['2026-08-28','Sala cuna','Reunión técnica — retiro a las 15:30.']
+],
+nursery_daily:[
+'Cepillo dental + gel dentífrico',
+'Bolsa para ropa sucia',
+'7 pañales diarios',
+'Babero lavable con mangas'
+],
+nursery_clothing:[
+'2 o 3 mudas completas según clima'
+],
+nursery_medications:[
+'Antipirético SOS',
+'Termómetro',
+'Crema para coceduras'
+]
+};
+
+function tab(id,b){
+document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));
+document.getElementById(id).classList.add('activeSection');
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+b.classList.add('active');
+}
+
+function speak(t){
+if(!('speechSynthesis'in window)){
+alert('La voz no está disponible en este navegador.');
+return;
+}
+speechSynthesis.cancel();
+let u=new SpeechSynthesisUtterance(t);
+u.lang='es-CL';
+u.rate=.95;
+speechSynthesis.speak(u);
+}
+
+function dateObj(s){
+return new Date(s+'T12:00:00');
+}
+
+function fmtDate(d){
+return d.toLocaleDateString('es-CL',{
+day:'numeric',
+month:'long'
+});
+}
+
+function iso(d){
+return d.getFullYear()+'-'+
+String(d.getMonth()+1).padStart(2,'0')+'-'+
+String(d.getDate()).padStart(2,'0');
+}
+
+function today(){
+let d=new Date();
+d.setHours(12,0,0,0);
+return d;
+}
+
+function eventsForDates(from,to,category){
+return DATA.events.filter(e=>{
+let d=dateObj(e[0]);
+return d>=from &&
+d<=to &&
+(!category || e[1].toLowerCase()===category);
+}).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function parkingFor(d){
+if(DATA.parking.days.includes(d.getDay())){
+return 'A las 07:59 debes pedir estacionamiento.';
+}
+return '';
+}
+
 function buildAnswer(q){
-  let s=q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  let d=today(),from,to,label='hoy',category=null;
 
-  const dias={
-    domingo:0,
-    lunes:1,
-    martes:2,
-    miercoles:3,
-    jueves:4,
-    viernes:5,
-    sabado:6
-  };
+let s=q.toLowerCase()
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g,'');
 
-  if(/proxima semana|siguiente semana/.test(s)){
-    from=new Date(d);
-    from.setDate(d.getDate()+1);
-    to=new Date(d);
-    to.setDate(d.getDate()+7);
-    label='los próximos 7 días';
+let d=today();
+let from;
+let to;
+let label='hoy';
+let category=null;
 
-  }else if(/esta semana/.test(s)){
-    from=new Date(d);
-    from.setDate(d.getDate()-((d.getDay()+6)%7));
-    to=new Date(from);
-    to.setDate(from.getDate()+6);
-    label='esta semana';
+const dias={
+domingo:0,
+lunes:1,
+martes:2,
+miercoles:3,
+jueves:4,
+viernes:5,
+sabado:6
+};
 
-  }else if(/manana/.test(s)){
-    from=new Date(d);
-    from.setDate(d.getDate()+1);
-    to=new Date(from);
-    label='mañana';
+if(/proxima semana|siguiente semana/.test(s)){
 
-  }else{
-    // Detectar días de la semana: lunes, martes, miércoles, etc.
-    let diaEncontrado=null;
+from=new Date(d);
+from.setDate(d.getDate()+1);
 
-    for(let nombre in dias){
-      if(s.includes(nombre)){
-        diaEncontrado=nombre;
-        break;
-      }
-    }
+to=new Date(d);
+to.setDate(d.getDate()+7);
 
-    if(diaEncontrado){
-      let objetivo=dias[diaEncontrado];
-      let actual=d.getDay();
-      let diferencia=(objetivo-actual+7)%7;
+label='los próximos 7 días';
 
-      // Si pregunta por el mismo día, mostrar hoy
-      if(diferencia===0){
-        from=new Date(d);
-        to=new Date(d);
-        label='hoy';
-      }else{
-        from=new Date(d);
-        from.setDate(d.getDate()+diferencia);
-        to=new Date(from);
-        label=diaEncontrado;
-      }
-    }else{
-      from=d;
-      to=d;
-      label='hoy';
-    }
-  }
+}else if(/esta semana/.test(s)){
 
-  if(/colegio/.test(s)) category='colegio';
-  if(/sala cuna|guarderia|jardin/.test(s)) category='sala cuna';
+from=new Date(d);
+from.setDate(d.getDate()-((d.getDay()+6)%7));
 
-  let ev=eventsForDates(from,to,category);
-  let lines=[];
+to=new Date(from);
+to.setDate(from.getDate()+6);
 
-  if(ev.length){
-    let last='';
-    ev.forEach(e=>{
-      if(e[0]!==last){
-        lines.push(
-          '<div class="date">'+fmtDate(dateObj(e[0]))+'</div>'
-        );
-        last=e[0];
-      }
-      lines.push('• '+e[2]);
-    });
-  }else{
-    lines.push(
-      'No tienes actividades registradas para '+
-      label+
-      (category?' en '+category:'')+
-      '.'
-    );
-  }
-// Revisar recordatorios para cualquier día consultado
-if(from && to && iso(from)===iso(to)){
-  let p=parkingFor(from);
+label='esta semana';
 
-  if(p){
-    lines.push('• '+p);
-  }
+}else if(/manana/.test(s)){
+
+from=new Date(d);
+from.setDate(d.getDate()+1);
+
+to=new Date(from);
+
+label='mañana';
+
+}else{
+
+let diaEncontrado=null;
+
+for(let nombre in dias){
+if(s.includes(nombre)){
+diaEncontrado=nombre;
+break;
+}
 }
 
-  return {
-    text:'Para '+label+': '+
-      lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),
-    html:lines.join('<br>')
-  };
+if(diaEncontrado){
+
+let objetivo=dias[diaEncontrado];
+let actual=d.getDay();
+let diferencia=(objetivo-actual+7)%7;
+
+from=new Date(d);
+from.setDate(d.getDate()+diferencia);
+
+to=new Date(from);
+
+if(diferencia===0){
+label='hoy';
+}else{
+label=diaEncontrado;
 }
 
-function askNatalia(){let q=document.getElementById('question').value.trim();if(!q)return;let a=buildAnswer(q),box=document.getElementById('answer');box.style.display='block';box.innerHTML=a.html;speak(a.text)}
+}else{
+
+from=new Date(d);
+to=new Date(d);
+label='hoy';
+
+}
+}
+
+if(/colegio/.test(s)){
+category='colegio';
+}
+
+if(/sala cuna|guarderia|jardin/.test(s)){
+category='sala cuna';
+}
+
+let ev=eventsForDates(from,to,category);
+let lines=[];
+
+if(ev.length){
+
+let last='';
+
+ev.forEach(e=>{
+
+if(e[0]!==last){
+lines.push(
+'<div class="date">'+
+fmtDate(dateObj(e[0]))+
+'</div>'
+);
+last=e[0];
+}
+
+lines.push('• '+e[2]);
+
+});
+
+}else{
+
+lines.push(
+'No tienes actividades registradas para '+
+label+
+(category?' en '+category:'')+
+'.'
+);
+
+}
+
+/* RECORDATORIOS */
+if(!category && iso(from)===iso(to)){
+
+let reminder=parkingFor(from);
+
+if(reminder){
+lines.push('🔔 '+reminder);
+}
+
+}
+
+return {
+text:'Para '+label+': '+
+lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),
+
+html:lines.join('<br>')
+};
+
+}
+
+function askNatalia(){
+
+let q=document.getElementById('question').value.trim();
+
+if(!q)return;
+
+let a=buildAnswer(q);
+
+let box=document.getElementById('answer');
+
+box.style.display='block';
+
+box.innerHTML=a.html;
+
+speak(a.text);
+
+}
+
 let recognition=null;
-function startListening(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('El reconocimiento de voz no está disponible en este navegador. Puedes escribir la pregunta.');return}if(recognition){recognition.stop();return}recognition=new SR();recognition.lang='es-CL';recognition.interimResults=false;recognition.maxAlternatives=1;let mic=document.getElementById('mic');mic.classList.add('listening');recognition.onresult=e=>{document.getElementById('question').value=e.results[0][0].transcript;askNatalia()};recognition.onerror=()=>{};recognition.onend=()=>{mic.classList.remove('listening');recognition=null};recognition.start()}
-function eventsHtml(arr){return arr.map(x=>'<div class="item"><div class="date">'+fmtDate(dateObj(x[0]))+'</div>'+x[2]+'</div>').join('')}
-function list(){return JSON.parse(localStorage.getItem('natShopping')||JSON.stringify(DATA.shopping))}
-function render(){document.getElementById('school').innerHTML=eventsHtml(DATA.events.filter(e=>e[1]==='Colegio'));document.getElementById('schoolHome').innerHTML=eventsHtml(DATA.events.filter(e=>e[1]==='Colegio'));document.getElementById('nursery').innerHTML=eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna'));document.getElementById('nurseryHome').innerHTML=eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna'));document.getElementById('routine').innerHTML=DATA.nursery_daily.concat(DATA.nursery_clothing,DATA.nursery_medications).map(x=>'<div class="item">• '+x+'</div>').join('');document.getElementById('shopping').innerHTML=list().map((x,i)=>'<div class="item"><label><input type="checkbox" onchange="del('+i+')"> '+x+'</label></div>').join('')}
-function addItem(){let i=document.getElementById('newItem'),v=i.value.trim();if(!v)return;let l=list();l.push(v);localStorage.setItem('natShopping',JSON.stringify(l));i.value='';render()}function del(i){let l=list();l.splice(i,1);localStorage.setItem('natShopping',JSON.stringify(l));render()}document.getElementById('question').addEventListener('keydown',e=>{if(e.key==='Enter')askNatalia()});render();
-</script><script>if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js')}</script></body></html>
+
+function startListening(){
+
+let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+if(!SR){
+alert('El reconocimiento de voz no está disponible en este navegador. Puedes escribir la pregunta.');
+return;
+}
+
+if(recognition){
+recognition.stop();
+return;
+}
+
+recognition=new SR();
+
+recognition.lang='es-CL';
+recognition.interimResults=false;
+recognition.maxAlternatives=1;
+
+let mic=document.getElementById('mic');
+
+mic.classList.add('listening');
+
+recognition.onresult=e=>{
+
+document.getElementById('question').value=
+e.results[0][0].transcript;
+
+askNatalia();
+
+};
+
+recognition.onerror=()=>{};
+
+recognition.onend=()=>{
+
+mic.classList.remove('listening');
+recognition=null;
+
+};
+
+recognition.start();
+
+}
+
+function eventsHtml(arr){
+
+return arr.map(x=>
+'<div class="item">'+
+'<div class="date">'+
+fmtDate(dateObj(x[0]))+
+'</div>'+
+x[2]+
+'</div>'
+).join('');
+
+}
+
+function list(){
+
+return JSON.parse(
+localStorage.getItem('natShopping') ||
+JSON.stringify(DATA.shopping)
+);
+
+}
+
+function render(){
+
+document.getElementById('school').innerHTML=
+eventsHtml(DATA.events.filter(e=>e[1]==='Colegio'));
+
+document.getElementById('schoolHome').innerHTML=
+eventsHtml(DATA.events.filter(e=>e[1]==='Colegio'));
+
+document.getElementById('nursery').innerHTML=
+eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna'));
+
+document.getElementById('nurseryHome').innerHTML=
+eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna'));
+
+document.getElementById('routine').innerHTML=
+DATA.nursery_daily
+.concat(DATA.nursery_clothing,DATA.nursery_medications)
+.map(x=>'<div class="item">• '+x+'</div>')
+.join('');
+
+document.getElementById('shopping').innerHTML=
+list().map((x,i)=>
+'<div class="item"><label>'+
+'<input type="checkbox" onchange="del('+i+')"> '+
+x+
+'</label></div>'
+).join('');
+
+}
+
+function addItem(){
+
+let i=document.getElementById('newItem');
+let v=i.value.trim();
+
+if(!v)return;
+
+let l=list();
+
+l.push(v);
+
+localStorage.setItem(
+'natShopping',
+JSON.stringify(l)
+);
+
+i.value='';
+
+render();
+
+}
+
+function del(i){
+
+let l=list();
+
+l.splice(i,1);
+
+localStorage.setItem(
+'natShopping',
+JSON.stringify(l)
+);
+
+render();
+
+}
+
+document.getElementById('question')
+.addEventListener('keydown',e=>{
+if(e.key==='Enter')askNatalia();
+});
+
+render();
+
+  </script>
