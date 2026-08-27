@@ -246,7 +246,7 @@ function buildAnswer(q){
 
 const s=q.toLowerCase()
 .normalize('NFD')
-.replace(/[\\u0300-\\u036f]/g,'');
+.replace(/[\u0300-\u036f]/g,'');
 
 const d=today();
 let from;
@@ -255,91 +255,95 @@ let label='hoy';
 let category=null;
 
 const dias={
-domingo:0,
-lunes:1,
-martes:2,
-miercoles:3,
-jueves:4,
-viernes:5,
-sabado:6
+ domingo:0,
+ lunes:1,
+ martes:2,
+ miercoles:3,
+ jueves:4,
+ viernes:5,
+ sabado:6
 };
+
+/*
+   IMPORTANTE:
+   Primero revisamos si la pregunta contiene un día de la semana.
+   Así "mañana jueves" no queda atrapado por "mañana" y,
+   además, "jueves" siempre significa el próximo jueves si hoy
+   también es jueves (salvo que la persona diga explícitamente "hoy").
+*/
+let diaEncontrado=null;
+for(const nombre of Object.keys(dias)){
+  if(s.includes(nombre)){
+    diaEncontrado=nombre;
+    break;
+  }
+}
 
 if(/proxima semana|siguiente semana/.test(s)){
 
-/* Próxima semana = lunes a domingo de la semana siguiente */
-const day=d.getDay();
-const daysUntilNextMonday=(8-day)%7 || 7;
+  /* Próxima semana = lunes a domingo de la semana siguiente */
+  const day=d.getDay();
+  const daysUntilNextMonday=(8-day)%7 || 7;
 
-from=new Date(d);
-from.setDate(d.getDate()+daysUntilNextMonday);
+  from=new Date(d);
+  from.setDate(d.getDate()+daysUntilNextMonday);
 
-to=new Date(from);
-to.setDate(from.getDate()+6);
+  to=new Date(from);
+  to.setDate(from.getDate()+6);
 
-label='la próxima semana';
+  label='la próxima semana';
 
 }else if(/esta semana/.test(s)){
 
-/* Semana actual = lunes a domingo */
-const daysFromMonday=(d.getDay()+6)%7;
+  /* Semana actual = lunes a domingo */
+  const daysFromMonday=(d.getDay()+6)%7;
 
-from=new Date(d);
-from.setDate(d.getDate()-daysFromMonday);
+  from=new Date(d);
+  from.setDate(d.getDate()-daysFromMonday);
 
-to=new Date(from);
-to.setDate(from.getDate()+6);
+  to=new Date(from);
+  to.setDate(from.getDate()+6);
 
-label='esta semana';
+  label='esta semana';
+
+}else if(diaEncontrado){
+
+  const objetivo=dias[diaEncontrado];
+  const actual=d.getDay();
+  let diferencia=(objetivo-actual+7)%7;
+
+  /* "jueves" significa el próximo jueves, no hoy */
+  if(diferencia===0 && !/hoy/.test(s)) diferencia=7;
+
+  from=new Date(d);
+  from.setDate(d.getDate()+diferencia);
+
+  to=new Date(from);
+  label=(diferencia===0 ? 'hoy' : diaEncontrado);
 
 }else if(/manana/.test(s)){
 
-from=new Date(d);
-from.setDate(d.getDate()+1);
+  from=new Date(d);
+  from.setDate(d.getDate()+1);
 
-to=new Date(from);
+  to=new Date(from);
+  label='mañana';
 
-label='mañana';
+}else if(/hoy/.test(s)){
 
-}else{
-
-let diaEncontrado=null;
-
-for(const nombre in dias){
-if(s.includes(nombre)){
-diaEncontrado=nombre;
-break;
-}
-}
-
-if(diaEncontrado){
-
-const objetivo=dias[diaEncontrado];
-const actual=d.getDay();
-let diferencia=(objetivo-actual+7)%7;
-
-/* Si dice un día que ya pasó esta semana, busca el próximo */
-if(diferencia===0 && !/hoy/.test(s)){
-diferencia=7;
-}
-
-from=new Date(d);
-from.setDate(d.getDate()+diferencia);
-
-to=new Date(from);
-
-label=diaEncontrado;
+  from=new Date(d);
+  to=new Date(d);
+  label='hoy';
 
 }else{
 
-from=new Date(d);
-to=new Date(d);
-label='hoy';
+  from=new Date(d);
+  to=new Date(d);
+  label='hoy';
 
-}
 }
 
 if(/colegio/.test(s)) category='colegio';
-
 if(/sala cuna|guarderia|jardin/.test(s)) category='sala cuna';
 
 const ev=eventsForDates(from,to,category);
@@ -347,50 +351,53 @@ const lines=[];
 
 if(ev.length){
 
-let last='';
+  let last='';
 
-ev.forEach(e=>{
+  ev.forEach(e=>{
 
-if(e[0]!==last){
-lines.push(
-'<div class="date">'+
-fmtDate(dateObj(e[0]))+
-'</div>'
-);
-last=e[0];
-}
+    if(e[0]!==last){
+      lines.push(
+        '<div class="date">'+
+        fmtDate(dateObj(e[0]))+
+        '</div>'
+      );
+      last=e[0];
+    }
 
-lines.push('• '+e[2]);
+    lines.push('• '+e[2]);
 
-});
+  });
 
 }else{
 
-lines.push(
-'No tienes actividades registradas para '+
-label+
-(category?' en '+category:'')+
-'.'
-);
+  const persona = category==='colegio' ? 'Josefina' : category==='sala cuna' ? 'Luciana' : '';
+
+  lines.push(
+    persona
+      ? 'Para '+persona+' no tienes actividades registradas para '+label+'.'
+      : 'No tienes actividades registradas para '+label+'.'
+  );
 
 }
 
-/* ESTACIONAMIENTO:
-   funciona para mañana, días específicos y rangos.
-   No depende de que existan actividades.
-*/
+/* Estacionamiento: funciona tanto para un día como para un rango. */
 if(!category){
-addParkingForRange(from,to,lines);
+  addParkingForRange(from,to,lines);
 }
+
+const answerPrefix = category==='colegio'
+  ? 'Para Josefina tienes'
+  : category==='sala cuna'
+    ? 'Para Luciana tienes'
+    : 'Para '+label+' tienes';
 
 return{
-text:'Para '+label+': '+
-lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),
-
-html:lines.join('<br>')
+  text:answerPrefix+': '+
+  lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),
+  html:'<div><b>'+answerPrefix+':</b></div>'+lines.join('<br>')
 };
-}
 
+}
 function askNatalia(){
 
 const q=document.getElementById('question').value.trim();
