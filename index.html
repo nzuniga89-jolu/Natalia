@@ -259,6 +259,150 @@ cur.setDate(cur.getDate()+1);
 }
 }
 
+
+/* ===== EVENTOS NUEVOS GUARDADOS POR VOZ =====
+   Se guardan en el navegador y NO requieren editar este archivo.
+*/
+const USER_EVENTS_KEY='natAgendaEventsV1';
+
+function getSavedEvents(){
+  try{return JSON.parse(localStorage.getItem(USER_EVENTS_KEY)||'[]');}
+  catch(e){return [];}
+}
+
+function saveEvent(date, person, text){
+  const arr=getSavedEvents();
+  arr.push({
+    id:Date.now()+Math.random(),
+    date,
+    person:person||'general',
+    text
+  });
+  localStorage.setItem(USER_EVENTS_KEY,JSON.stringify(arr));
+}
+
+function savedEventsForDates(from,to,person){
+  return getSavedEvents().filter(e=>{
+    const d=dateObj(e.date);
+    if(d<from || d>to)return false;
+    return !person || e.person===person;
+  }).map(e=>[e.date,e.person,e.text]);
+}
+
+function agendaEventsForDates(from,to,category){
+  let fixedCategory=category;
+  if(category==='josefina') fixedCategory='colegio';
+  if(category==='sala cuna') fixedCategory='sala cuna';
+
+  let fixed=eventsForDates(from,to,fixedCategory);
+
+  /* Para Josefina se agregan también sus eventos personales. */
+  if(category==='josefina'){
+    fixed=fixed.concat(savedEventsForDates(from,to,'josefina'));
+  }else if(category==='sala cuna'){
+    fixed=fixed.concat(savedEventsForDates(from,to,'luciana'));
+  }else if(category){
+    fixed=fixed.concat(savedEventsForDates(from,to,category));
+  }else{
+    fixed=fixed.concat(savedEventsForDates(from,to,'general'));
+  }
+
+  return fixed.sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function chileDateOffset(days){
+  const d=today();
+  d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+
+function parseNewSpokenEvent(text){
+  const raw=text.trim();
+  const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  /* No guardar preguntas como si fueran eventos. */
+  if(/^(que|qué|cual|cu[aá]l|tengo|hay|donde|d[oó]nde|cuando|cu[aá]ndo)\b/.test(s)
+     || /\?/.test(raw)) return null;
+
+  let person='general';
+  if(/\bjosefina\b/.test(s)) person='josefina';
+  else if(/\bluciana\b/.test(s)||/sala\s*cuna/.test(s)) person='luciana';
+
+  let offset=null;
+
+  if(/\bpasado\s+manana\b/.test(s)) offset=2;
+  else if(/\bmanana\b/.test(s)) offset=1;
+  else if(/\bhoy\b/.test(s)) offset=0;
+
+  if(offset===null){
+    const dias={domingo:0,lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6};
+    for(const nombre of Object.keys(dias)){
+      if(new RegExp('\\b'+nombre+'\\b').test(s)){
+        const d=today(), actual=d.getDay(), target=dias[nombre];
+        let diff=(target-actual+7)%7;
+        if(diff===0)diff=7;
+        offset=diff;
+        break;
+      }
+    }
+  }
+
+  if(offset===null){
+    const dm=s.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?\b/);
+    if(dm){
+      const day=Number(dm[1]), month=Number(dm[2]);
+      const year=dm[3]?Number(dm[3]):today().getFullYear();
+      const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      let cleaned=raw.replace(/^(agrega|anota|guarda|recuerda)\s*/i,'')
+        .replace(/\bpara\s+(josefina|luciana)\b\s*/i,'')
+        .replace(/\b(josefina|luciana)\b\s*/i,'')
+        .trim();
+      return {date,person,text:cleaned};
+    }
+  }
+
+  if(offset===null)return null;
+
+  let cleaned=raw
+    .replace(/^(agrega|anota|guarda|recuerda)\s*/i,'')
+    .replace(/\bpara\s+(josefina|luciana)\b\s*/i,'')
+    .replace(/\b(josefina|luciana)\b\s*/i,'')
+    .replace(/\bpasado\s+mañana\b|\bpasado\s+manana\b|\bmañana\b|\bmanana\b|\bhoy\b/i,'')
+    .replace(/^\s*(debo|tengo que|hay que|necesito|debe|deben)\s+/i,'')
+    .trim();
+
+  return {date:chileDateOffset(offset),person,text:cleaned};
+}
+
+function tryAddSpokenEvent(transcript){
+  const s=transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  /* Comandos explícitos o frases declarativas como:
+     "mañana debo comprar sal..." */
+  const shouldSave=/^\s*(agrega|anota|guarda|recuerda)\b/.test(s)
+    || /\b(debo|tengo\s+que|hay\s+que|necesito)\b/.test(s);
+
+  if(!shouldSave)return false;
+
+  const item=parseNewSpokenEvent(transcript);
+  if(!item || !item.text)return false;
+
+  saveEvent(item.date,item.person,item.text);
+
+  const who=item.person==='josefina'?'Josefina':
+             item.person==='luciana'?'Luciana':'para ti';
+  const dt=dateObj(item.date);
+  const day=fmtDate(dt);
+
+  const box=document.getElementById('answer');
+  box.style.display='block';
+  box.innerHTML='<div><b>Guardado:</b> '+who+' — '+day+'</div><div>• '+item.text+'</div>';
+
+  speak('Listo. Guardé '+item.text+' para '+who+' el '+day+'.');
+  return true;
+}
+
+
 function buildAnswer(q){
 
 const s=q.toLowerCase()
@@ -373,14 +517,7 @@ else if(/luciana/.test(s)) category='sala cuna';
 else if(/colegio/.test(s)) category='colegio';
 else if(/sala cuna|guarderia|jardin/.test(s)) category='sala cuna';
 
-let ev;
-if(category==='josefina'){
-  ev=eventsForDates(from,to,'colegio').concat(
-     eventsForDates(from,to,'josefina')
-  ).sort((a,b)=>a[0].localeCompare(b[0]));
-}else{
-  ev=eventsForDates(from,to,category);
-}
+let ev=agendaEventsForDates(from,to,category);
 const lines=[];
 
 if(ev.length){
@@ -472,10 +609,12 @@ const mic=document.getElementById('mic');
 mic.classList.add('listening');
 
 recognition.onresult=e=>{
-document.getElementById('question').value=
-e.results[0][0].transcript;
+const transcript=e.results[0][0].transcript;
+document.getElementById('question').value=transcript;
 
-askNatalia();
+if(!tryAddSpokenEvent(transcript)){
+  askNatalia();
+}
 };
 
 recognition.onerror=()=>{};
@@ -512,17 +651,21 @@ JSON.stringify(DATA.shopping)
 
 function render(){
 
+const saved=getSavedEvents();
+const savedJosefina=saved.filter(e=>e.person==='josefina').map(e=>[e.date,'Colegio',e.text]);
+const savedLuciana=saved.filter(e=>e.person==='luciana').map(e=>[e.date,'Sala cuna',e.text]);
+
 document.getElementById('school').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Colegio'));
+eventsHtml(DATA.events.filter(e=>e[1]==='Colegio').concat(savedJosefina));
 
 document.getElementById('schoolHome').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Colegio'));
+eventsHtml(DATA.events.filter(e=>e[1]==='Colegio').concat(savedJosefina));
 
 document.getElementById('nursery').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna'));
+eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
 
 document.getElementById('nurseryHome').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna'));
+eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
 
 document.getElementById('routine').innerHTML=
 DATA.nursery_daily
@@ -594,5 +737,8 @@ registrations.forEach(reg=>reg.unregister());
 }
 </script>
 
+<div style="font-size:12px;opacity:.65;text-align:center;margin:8px 0 14px">
+También puedes decir: “Mañana debo comprar sal, aceite y arroz”.
+</div>
 </body>
 </html>
