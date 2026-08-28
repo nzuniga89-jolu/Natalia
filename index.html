@@ -14,171 +14,92 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f5f3fb;color:#292536;font-family:system-ui,sans-serif}
-header{background:linear-gradient(135deg,#6d5ce7,#8d72f2);color:white;padding:26px 18px;border-radius:0 0 28px 28px}
-h1{margin:0;font-size:32px}
-header p{margin:5px 0 0;opacity:.9}
-main{max-width:760px;margin:auto;padding:14px 14px 90px}
-nav{display:flex;gap:7px;overflow:auto;margin-bottom:8px}
-nav button{border:0;border-radius:99px;padding:10px 14px;background:#e8e4f8;color:#51467d;font-weight:800;white-space:nowrap}
-nav button.active{background:#6d5ce7;color:white}
-section{display:none}
-.activeSection{display:block}
-.card{background:white;border-radius:20px;padding:16px;margin:10px 0;box-shadow:0 5px 18px #32245c12}
-.item{padding:12px 0;border-bottom:1px solid #eee;line-height:1.4}
-.item:last-child{border:0}
-.date{font-size:12px;text-transform:uppercase;color:#6d5ce7;font-weight:900}
-.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#ffe7ed;color:#a51f3d;font-size:12px;font-weight:900}
-button.action{border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;color:white;font-weight:800;margin-top:8px}
-.ask{margin:10px 0}
-.askbox{display:flex;gap:8px;align-items:center}
-.askbox input{flex:1;min-width:0}
-.mic{width:48px;height:48px;border:0;border-radius:14px;background:#6d5ce7;color:white;font-size:22px}
-.mic.listening{background:#c43d69;animation:pulse 1s infinite}
-@keyframes pulse{50%{transform:scale(1.05)}}
-.answer{margin-top:12px;background:#f2effd;border-radius:16px;padding:14px;line-height:1.45}
-.answer b{color:#5d4bc0}
-.small{color:#777;font-size:13px}
-.add{display:flex;gap:8px;margin-top:10px}
-.add input{flex:1}
-input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}
-.fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border:0;border-radius:50%;background:#6d5ce7;color:white;font-size:24px;box-shadow:0 8px 25px #33236a40}
-
-.calendar-head{font-size:11px;text-align:center;font-weight:800;color:#777;padding:4px 0}
-.calendar-day{min-height:54px;border:1px solid #eee8f7;border-radius:10px;padding:6px;background:white;cursor:pointer}
-.calendar-day.muted{opacity:.38}
-.calendar-day.today{outline:2px solid #6d5ce7}
-.calendar-day.selected{background:#f2effd}
-.calendar-day .num{font-weight:800;font-size:13px}
-.calendar-day .dot{display:block;margin-top:5px;font-size:10px;line-height:1.15;overflow:hidden;white-space:nowrap}
-.uploadBox{border:2px dashed #d8d0ef;border-radius:16px;padding:14px;background:#faf9ff;margin-top:12px}
-.uploadRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.fileInput{display:none}
-.fileLabel{display:inline-block;border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;color:#fff;font-weight:800;cursor:pointer}
-.personSelect{border:1px solid #ddd8ea;border-radius:13px;padding:11px;background:#fff;font-size:15px;flex:1;min-width:180px}
-.status{margin-top:10px;padding:10px;border-radius:12px;background:#f2effd;display:none;line-height:1.4}
-.status.ok{display:block}
-.status.error{display:block;background:#fff0f3;color:#a51f3d}
-.chatBox{margin-top:12px;padding:14px;border-radius:16px;background:#f2effd}
-textarea{width:100%;min-height:150px;border:1px solid #ddd8ea;border-radius:13px;padding:12px;font:inherit;resize:vertical}
-.hidden{display:none}
+:root{--purple:#6d5ce7;--purple2:#8d72f2;--bg:#f7f5fc;--text:#292536;--muted:#77718a;--soft:#efecfb}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;padding:28px 20px 24px;border-radius:0 0 30px 30px}
+.header-inner{max-width:760px;margin:auto}h1{margin:0;font-size:32px;line-height:1.1}header p{margin:6px 0 0;font-size:16px;opacity:.92}
+main{max-width:760px;margin:auto;padding:14px 14px 100px}
+nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0}
+nav button{border:0;border-radius:14px;padding:10px 5px;background:#e9e5f8;color:#51467d;font-weight:800;font-size:12px;white-space:nowrap}nav button.active{background:var(--purple);color:#fff}
+section{display:none}.activeSection{display:block}
+.card{background:#fff;border-radius:22px;padding:18px;margin:11px 0;box-shadow:0 5px 18px #32245c12}
+.hero{background:linear-gradient(180deg,#fff,#faf9ff);text-align:center;padding:22px 18px}.hero h2{margin:0 0 6px;font-size:23px}.hero p{margin:0;color:var(--muted)}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.quick button{border:0;border-radius:17px;background:var(--soft);padding:16px 10px;color:#4f447a;font-weight:850;font-size:15px}.quick button span{display:block;font-size:26px;margin-bottom:5px}
+.item{padding:12px 0;border-bottom:1px solid #eee;line-height:1.4}.item:last-child{border:0}.date{font-size:12px;text-transform:uppercase;color:var(--purple);font-weight:900}.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#ffe7ed;color:#a51f3d;font-size:12px;font-weight:900}
+button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--purple);color:#fff;font-weight:850;margin-top:8px;font-size:14px}.full{width:100%}
+.ask{margin:10px 0}.askbox{display:flex;gap:8px;align-items:center}.askbox input{flex:1;min-width:0}.mic{width:50px;height:50px;border:0;border-radius:15px;background:var(--purple);color:#fff;font-size:22px}.mic.listening{background:#c43d69;animation:pulse 1s infinite}@keyframes pulse{50%{transform:scale(1.05)}}
+.answer{margin-top:12px;background:#f2effd;border-radius:16px;padding:14px;line-height:1.45}.answer b{color:#5d4bc0}.small{color:var(--muted);font-size:13px}
+.add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}textarea{width:100%;min-height:140px;border:1px solid #ddd8ea;border-radius:13px;padding:12px;font:inherit;resize:vertical}
+.fab{position:fixed;right:18px;bottom:18px;width:62px;height:62px;border:0;border-radius:50%;background:var(--purple);color:#fff;font-size:25px;box-shadow:0 8px 25px #33236a40;z-index:20}
+.calendar-head{font-size:11px;text-align:center;font-weight:800;color:#777;padding:4px 0}.calendar-day{min-height:60px;border:1px solid #eee8f7;border-radius:11px;padding:6px;background:#fff;cursor:pointer}.calendar-day.muted{opacity:.38}.calendar-day.today{outline:2px solid var(--purple)}.calendar-day.selected{background:#f2effd}.calendar-day .num{font-weight:800;font-size:13px}.calendar-day .dot{display:block;margin-top:5px;font-size:10px;line-height:1.15;overflow:hidden;white-space:nowrap}
+.uploadBox{border:2px dashed #d8d0ef;border-radius:18px;padding:15px;background:#faf9ff;margin-top:12px}.uploadRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fileInput{display:none}.fileLabel{display:block;text-align:center;border:0;border-radius:14px;padding:13px 14px;background:var(--purple);color:#fff;font-weight:850;cursor:pointer;flex:1}.personSelect{border:1px solid #ddd8ea;border-radius:13px;padding:12px;background:#fff;font-size:15px;flex:1;min-width:180px}.status{margin-top:10px;padding:11px;border-radius:12px;background:#f2effd;display:none;line-height:1.4}.status.ok{display:block}.status.error{display:block;background:#fff0f3;color:#a51f3d}.chatBox{margin-top:12px;padding:15px;border-radius:18px;background:#f2effd}.hidden{display:none}
+.step{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.stepnum{min-width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:900}.tip{background:#fff8df;border-radius:14px;padding:12px;margin-top:12px;font-size:13px}
+@media(max-width:430px){nav button{font-size:11px;padding:9px 3px}.quick{grid-template-columns:1fr 1fr}.card{padding:16px}}
 </style>
 </head>
 
 <body>
-<header>
-<h1>💜 Natalia</h1>
-<p>Tu asistente personal</p>
-</header>
-
+<header><div class="header-inner"><h1>💜 Natalia</h1><p>Tu asistente personal</p></div></header>
 <main>
 <nav>
-<button class="active" onclick="tab('hoy',this)">Hoy</button>
+<button class="active" onclick="tab('hoy',this)">Inicio</button>
 <button onclick="tab('hijas',this)">Hijas</button>
 <button onclick="tab('compras',this)">Compras</button>
-<button onclick="tab('recordatorios',this)">Recordatorios</button>
+<button onclick="tab('recordatorios',this)">Avisos</button>
 <button onclick="tab('calendario',this)">Calendario</button>
 </nav>
 
 <section id="hoy" class="activeSection">
-<div class="card ask">
-<h2>💬 Habla con Natalia</h2>
-<p class="small">Puedes preguntar: “¿Qué tengo para hoy?”, “¿Qué tengo mañana?”, “¿Qué tengo el jueves?”, “¿Qué tengo el viernes?” o “¿Qué tengo esta semana?”</p>
-<div class="askbox">
-<input id="question" autocomplete="off" placeholder="Pregúntame algo...">
-<button class="mic" id="mic" onclick="startListening()" aria-label="Hablar">🎙️</button>
-<button class="action" onclick="askNatalia()">Preguntar</button>
+<div class="card hero">
+<h2>¿Qué necesitas?</h2><p>Habla, pregunta o agrega algo. Natalia lo guarda por ti.</p>
+<div class="quick">
+<button onclick="document.getElementById('question').focus()"><span>💬</span>Preguntar</button>
+<button onclick="startListening()"><span>🎙️</span>Hablar</button>
+<button onclick="tab('calendario',document.querySelectorAll('nav button')[4])"><span>📅</span>Ver calendario</button>
+<button onclick="tab('compras',document.querySelectorAll('nav button')[2])"><span>🛒</span>Compras</button>
 </div>
-<div id="answer" class="answer" style="display:none"></div>
 </div>
-
-<div class="card">
-<span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span>
-<p><b>Pedir estacionamiento</b></p>
-<p class="small">Natalia, son las 7:59. Recuerda pedir estacionamiento.</p>
-<button class="action" onclick="speak(DATA.parking.message)">🔊 Probar voz</button>
-</div>
-
-<div class="card"><h2>🎒 Colegio — agosto</h2><div id="schoolHome"></div></div>
-<div class="card"><h2>👶 Sala cuna — agosto</h2><div id="nurseryHome"></div></div>
+<div class="card ask"><h2>💬 Pregúntale a Natalia</h2><p class="small">Ej.: “¿Qué tengo mañana?”, “¿Qué tiene Josefina el viernes?” o “¿Qué tiene Luciana esta semana?”</p>
+<div class="askbox"><input id="question" autocomplete="off" placeholder="Escribe o toca 🎙️"><button class="mic" id="mic" onclick="startListening()" aria-label="Hablar">🎙️</button><button class="action" onclick="askNatalia()">Enviar</button></div><div id="answer" class="answer" style="display:none"></div></div>
+<div class="card"><span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span><p><b>Pedir estacionamiento</b></p><p class="small">Natalia te recuerda pedir estacionamiento.</p><button class="action" onclick="speak(DATA.parking.message)">🔊 Probar</button></div>
+<div class="card"><h2>🎒 Josefina — Colegio</h2><div id="schoolHome"></div></div>
+<div class="card"><h2>👶 Luciana — Sala cuna</h2><div id="nurseryHome"></div></div>
 </section>
 
 <section id="hijas">
-<div class="card"><h2>🎒 Colegio</h2><div id="school"></div></div>
-<div class="card"><h2>👶 Sala cuna</h2><div id="nursery"></div></div>
-<div class="card"><h2>🧳 Rutina sala cuna</h2><div id="routine"></div></div>
+<div class="card"><h2>🎒 Josefina — Colegio</h2><div id="school"></div></div>
+<div class="card"><h2>👶 Luciana — Sala cuna</h2><div id="nursery"></div></div>
+<div class="card"><h2>🧳 Qué llevar a sala cuna</h2><div id="routine"></div></div>
 </section>
 
-<section id="compras">
-<div class="card">
-<h2>🛒 Supermercado</h2>
-<div id="shopping"></div>
-<div class="add">
-<input id="newItem" placeholder="Agregar producto">
-<button class="action" onclick="addItem()">Agregar</button>
-</div>
-<p class="small">Puedes cambiar esta lista cuando quieras.</p>
-</div>
-</section>
+<section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button></div></div></section>
 
-<section id="recordatorios">
-<div class="card">
-<h2>🔔 Recordatorios</h2>
-<div class="item"><span class="badge">IMPORTANTE</span><br>Jueves y viernes a las 07:59 — pedir estacionamiento.</div>
-<p class="small">Natalia puede responder preguntas por voz o texto sobre tus actividades.</p>
-</div>
-</section>
+<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><div class="item"><span class="badge">JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b></div><p class="small">También puedes decir: “mañana debo comprar pan” o “6 de septiembre cumpleaños de Josefina”.</p></div></section>
 
 <section id="calendario">
-
 <div class="card">
-<h2>📎 Subir calendario</h2>
-<p class="small">
-Esta versión ya no usa la API de OpenAI ni consume saldo. Natalia lee el PDF o la foto en el navegador y prepara el contenido para que <b>ChatGPT lo interprete</b>.
-</p>
-
+<h2>📅 Agregar un calendario</h2>
+<p class="small">Elige a quién corresponde y sube una foto o PDF. Natalia lo lee en tu teléfono. Después ChatGPT ayuda a convertirlo en actividades.</p>
 <div class="uploadBox">
-<div class="uploadRow">
-<select id="uploadPerson" class="personSelect">
-<option value="josefina">Josefina — Colegio</option>
-<option value="luciana">Luciana — Sala cuna</option>
-</select>
-
-<label for="calendarFile" class="fileLabel">📎 Elegir archivo</label>
-<input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()">
-</div>
-
+<div class="uploadRow"><select id="uploadPerson" class="personSelect"><option value="josefina">Josefina — Colegio</option><option value="luciana">Luciana — Sala cuna</option></select>
+<label for="calendarFile" class="fileLabel">📎 Elegir foto o PDF</label><input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()"></div>
 <div id="uploadStatus" class="status"></div>
-
 <div id="chatBox" class="chatBox hidden">
-<b>🧠 Ahora apóyate en ChatGPT</b>
-<p class="small">
-Natalia preparó el texto. Pulsa <b>Copiar para ChatGPT</b>, abre ChatGPT, pega el texto y pídele que devuelva el JSON. Luego copia la respuesta y pégala abajo.
-</p>
-
-<button class="action" onclick="copyPrompt()">📋 Copiar para ChatGPT</button>
-<button class="action" onclick="openChatGPT()">🤖 Abrir ChatGPT</button>
-
-<textarea id="chatResult" placeholder="Después de que ChatGPT te entregue el JSON, pégalo aquí..."></textarea>
-<button class="action" onclick="importChatGPTResult()">✅ Agregar actividades a Natalia</button>
+<h3 style="margin-top:0">🤖 Falta solo un paso</h3>
+<div class="step"><div class="stepnum">1</div><div>Envía el texto a <b>ChatGPT</b>.</div></div>
+<div class="step"><div class="stepnum">2</div><div>ChatGPT lo ordena y te entrega el resultado.</div></div>
+<div class="step"><div class="stepnum">3</div><div>Pega el resultado aquí y Natalia lo agrega al calendario.</div></div>
+<button class="action full" onclick="sendToChatGPT()">🤖 Enviar a ChatGPT</button>
+<button class="action full" onclick="copyPrompt()">📋 Copiar texto</button>
+<textarea id="chatResult" placeholder="Pega aquí la respuesta de ChatGPT…"></textarea>
+<button class="action full" onclick="importChatGPTResult()">✅ Agregar al calendario</button>
+<div class="tip">💡 No necesitas configurar una API ni pagar saldo de OpenAI para usar esta versión.</div>
 </div>
-</div>
-
-<div class="card">
-<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-<button class="action" onclick="changeCalendarMonth(-1)" style="margin-top:0">‹</button>
-<h2 id="calendarTitle" style="margin:0;text-align:center"></h2>
-<button class="action" onclick="changeCalendarMonth(1)" style="margin-top:0">›</button>
-</div>
-<div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px"></div>
-<div id="calendarEvents" style="margin-top:14px"></div>
-</div>
-
+</div></div>
+<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><button class="action" onclick="changeCalendarMonth(-1)" style="margin-top:0">‹</button><h2 id="calendarTitle" style="margin:0;text-align:center"></h2><button class="action" onclick="changeCalendarMonth(1)" style="margin-top:0">›</button></div><div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px"></div><div id="calendarEvents" style="margin-top:14px"></div></div>
 </section>
 </main>
-
 <button class="fab" onclick="startListening()" aria-label="Hablar con Natalia">🎙️</button>
-
 <script>
 const DATA={
 appName:'Natalia',
@@ -672,9 +593,20 @@ alert('✅ Copiado. Ahora abre ChatGPT y pega el contenido.');
 }
 }
 
-function openChatGPT(){
-window.open('https://chatgpt.com/','_blank');
+async function sendToChatGPT(){
+  if(!extractedCalendarText){ alert('Primero sube y lee un calendario.'); return; }
+  const prompt=buildChatPrompt();
+  try{
+    if(navigator.share){
+      await navigator.share({title:'Calendario de Natalia',text:prompt});
+      return;
+    }
+  }catch(e){ if(e && e.name==='AbortError') return; }
+  await copyPrompt();
+  window.open('https://chatgpt.com/','_blank');
 }
+
+function openChatGPT(){ sendToChatGPT(); }
 
 function importChatGPTResult(){
 const raw=document.getElementById('chatResult').value.trim();
