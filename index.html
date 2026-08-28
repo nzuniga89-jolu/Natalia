@@ -118,33 +118,6 @@ important:true,
 message:'Natalia, son las 7:59. Recuerda pedir estacionamiento.'
 },
 shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],
-events:[
-['2026-08-03','Colegio','Inicio evaluaciones estandarizadas de Inglés Tradicional y evaluaciones externas orales.'],
-['2026-08-05','Colegio','Simulacro de refugio.'],
-['2026-08-10','Colegio','Inicio Sociograma 2 BraveUP!.'],
-['2026-08-15','Colegio','Feriado — Asunción de la Virgen.'],
-['2026-08-17','Colegio','Término Sociograma 2 BraveUP! y Digital Citizenship Week.'],
-['2026-08-20','Colegio','Ensayo PAES DEMRE IV medio.'],
-['2026-08-21','Colegio','Ensayo PAES DEMRE IV medio y Green Day: polera o accesorio verde.'],
-['2026-08-24','Colegio','Semana de Evaluación Unidad 3, Lenguaje y Matemática 1° Básico a II Medio. Semana de las Ciencias.'],
-['2026-08-28','Colegio','Jeans Day CAMPUR general de estudiantes.'],
-['2026-08-10','Sala cuna','Traer un objeto tecnológico desde el hogar, dentro de un estuche.'],
-['2026-08-12','Sala cuna','Camión de juguete tamaño mediano con nombre para jugar con arena.'],
-['2026-08-13','Sala cuna','Cumpleaños de Constancio N°2.'],
-['2026-08-14','Sala cuna','Día de la familia — horario a confirmar.'],
-['2026-08-18','Sala cuna','Fruta picada para receta, en recipiente pequeño con tapa y nombre.'],
-['2026-08-21','Sala cuna','Venir desde el hogar con vestimenta en blanco y negro.'],
-['2026-08-25','Sala cuna','1 espejo mediano con nombre.'],
-['2026-08-26','Sala cuna','Día de la técnico en párvulos — enviar colación para compartir a las 15:30.'],
-['2026-08-28','Sala cuna','Reunión técnica — retiro a las 15:30.'],
-['2026-09-02','Josefina','🎂 Cumpleaños de Josefina.'],
-['2026-09-05','Josefina','💃 Baile de Josefina a las 11:30 — debe estar en el colegio.'],
-['2026-09-05','Josefina','🏫 A las 09:00 hay que estar en el stand del colegio para vender.'],
-['2026-09-01','Sala cuna','Ropa para ensuciar + 1 reciclado de material reciclable por cada niño.'],
-['2026-09-03','Sala cuna','1 botella plástica de 1 litro.'],
-['2026-09-04','Sala cuna','Baile sala cuna — jardín cerrado.'],
-['2026-09-25','Sala cuna','Carrito de Primavera: traer tu mejor outfit acorde a la primavera — desfile.']
-],
 nursery_daily:[
 'Cepillo dental + gel dentífrico',
 'Bolsa para ropa sucia',
@@ -208,8 +181,9 @@ seen.add(k);return true;
 });
 localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(clean));
 }
-
-function allFixedEvents(){return DATA.events.concat(getImportedEvents());}
+function allFixedEvents(){
+return getImportedEvents();
+}
 
 function eventsForDates(from,to,category){
 return allFixedEvents().filter(e=>{
