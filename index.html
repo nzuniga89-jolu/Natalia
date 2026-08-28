@@ -38,6 +38,7 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 .calendar-day .num{font-weight:800;font-size:13px}.calendar-day .dot{display:block;margin-top:5px;font-size:9px;line-height:1.15;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 @media(max-width:430px){#calendarGrid{gap:3px}.calendar-day{min-height:52px;padding:4px;border-radius:8px}.calendar-head{font-size:10px}.calendar-day .num{font-size:12px}.calendar-day .dot{font-size:8px;margin-top:3px}}
 .uploadBox{border:2px dashed #d8d0ef;border-radius:18px;padding:15px;background:#faf9ff;margin-top:12px}.uploadRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fileInput{display:none}.fileLabel{display:block;text-align:center;border:0;border-radius:14px;padding:13px 14px;background:var(--purple);color:#fff;font-weight:850;cursor:pointer;flex:1}.personSelect{border:1px solid #ddd8ea;border-radius:13px;padding:12px;background:#fff;font-size:15px;flex:1;min-width:180px}.status{margin-top:10px;padding:11px;border-radius:12px;background:#f2effd;display:none;line-height:1.4}.status.ok{display:block}.status.error{display:block;background:#fff0f3;color:#a51f3d}.chatBox{margin-top:12px;padding:15px;border-radius:18px;background:#f2effd}.hidden{display:none}
+.weatherCard{background:linear-gradient(135deg,#f4f1ff,#fff);border:1px solid #e7e1fb}.weatherMain{display:flex;align-items:center;gap:12px}.weatherIcon{font-size:42px}.weatherTemp{font-size:30px;font-weight:900}.weatherDetails{color:var(--muted);font-size:14px}.notifyRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.notifyRow .action{margin-top:0}.success{color:#247a4b;font-weight:800}
 .step{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.stepnum{min-width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:900}.tip{background:#fff8df;border-radius:14px;padding:12px;margin-top:12px;font-size:13px}
 @media(max-width:430px){nav button{font-size:11px;padding:9px 3px}.quick{grid-template-columns:1fr 1fr}.card{padding:16px}}
 </style>
@@ -64,6 +65,8 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <button onclick="tab('compras',document.querySelectorAll('nav button')[2])"><span>🛒</span>Compras</button>
 </div>
 </div>
+<div class="card weatherCard"><h2>🌤️ El tiempo de mañana</h2><div id="weatherBox"><div class="small">Cargando pronóstico…</div></div><div class="notifyRow"><button class="action" onclick="loadWeather(true)">🔄 Actualizar</button><button class="action" onclick="testWeatherVoice()">🔊 Probar aviso de las 19:00</button></div></div>
+<div class="card"><h2>🔔 Avisos automáticos</h2><p class="small">Natalia puede avisarte de los avisos importantes mientras la app está abierta. En el teléfono debes permitir las notificaciones.</p><button class="action" onclick="enableNotifications()">🔔 Activar avisos</button><span id="notifyStatus" class="small" style="margin-left:8px"></span></div>
 <div class="card ask"><h2>💬 Pregúntale a Natalia</h2><p class="small">Ej.: “¿Qué tengo mañana?”, “¿Qué tiene Josefina el viernes?” o “¿Qué tiene Luciana esta semana?”</p>
 <div class="askbox"><input id="question" autocomplete="off" placeholder="Escribe o toca 🎙️"><button class="mic" id="mic" onclick="startListening()" aria-label="Hablar">🎙️</button><button class="action" onclick="askNatalia()">Enviar</button></div><div id="answer" class="answer" style="display:none"></div></div>
 <div class="card"><span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span><p><b>Pedir estacionamiento</b></p><p class="small">Natalia te recuerda pedir estacionamiento.</p><button class="action" onclick="speak(DATA.parking.message)">🔊 Probar</button></div>
@@ -158,6 +161,10 @@ nursery_medications:['Antipirético SOS','Termómetro','Crema para coceduras']
 const IMPORTED_EVENTS_KEY='natImportedEventsV1';
 const USER_EVENTS_KEY='natAgendaEventsV1';
 const AVATAR_KEY='natAvatarV1';
+const NOTIFY_KEY='natNotifyV1';
+const WEATHER_CITY_KEY='natWeatherCityV1';
+const WEATHER_LAST_KEY='natWeatherLastV1';
+const REMINDER_LAST_KEY='natReminderLastV1';
 
 function tab(id,b){
 document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));
@@ -219,6 +226,91 @@ function renderAvatar(){
   box.className='avatar-placeholder';
   box.textContent='N';
  }
+}
+
+async function enableNotifications(){
+  if(!('Notification' in window)){alert('Este navegador no permite notificaciones.');return false;}
+  const p=await Notification.requestPermission();
+  localStorage.setItem(NOTIFY_KEY,p==='granted'?'1':'0');
+  updateNotifyStatus();
+  if(p==='granted'){new Notification('Natalia',{body:'Listo. Los avisos importantes están activados.'}); return true;}
+  alert('Las notificaciones no fueron autorizadas. Puedes activarlas desde los permisos del navegador.');
+  return false;
+}
+function updateNotifyStatus(){
+ const el=document.getElementById('notifyStatus'); if(!el)return;
+ if('Notification' in window && Notification.permission==='granted') el.textContent='✅ Activados';
+ else el.textContent='';
+}
+function notifyUser(title,body,speechText){
+ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); }catch(e){}
+ if(speechText) speak(speechText);
+}
+function localClock(){
+ const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',hour12:false,weekday:'short'}).formatToParts(new Date());
+ return {hour:Number(p.find(x=>x.type==='hour').value),minute:Number(p.find(x=>x.type==='minute').value),weekday:p.find(x=>x.type==='weekday').value};
+}
+function checkImportantReminders(){
+ const c=localClock();
+ const todayKey=keyDate(today());
+ const last=localStorage.getItem(REMINDER_LAST_KEY);
+ if(c.hour===7 && c.minute===59 && DATA.parking.days.includes(today().getDay()) && last!==todayKey){
+   localStorage.setItem(REMINDER_LAST_KEY,todayKey);
+   notifyUser('Natalia · Aviso importante','Son las 7:59. Recuerda pedir estacionamiento.','Natalia: son las 7:59. Recuerda pedir estacionamiento.');
+ }
+}
+function weatherCodeText(code){
+ if(code===0)return ['☀️','soleado'];
+ if([1,2].includes(code))return ['🌤️','parcialmente nublado'];
+ if(code===3)return ['☁️','nublado'];
+ if([45,48].includes(code))return ['🌫️','con neblina'];
+ if([51,53,55,56,57].includes(code))return ['🌦️','con lloviznas'];
+ if([61,63,65,66,67].includes(code))return ['🌧️','con lluvia'];
+ if([71,73,75,77].includes(code))return ['❄️','con nieve'];
+ if([80,81,82].includes(code))return ['🌦️','con chubascos'];
+ if([95,96,99].includes(code))return ['⛈️','con tormentas'];
+ return ['🌤️','variable'];
+}
+async function loadWeather(manual=false){
+ const box=document.getElementById('weatherBox'); if(!box)return;
+ const city=localStorage.getItem(WEATHER_CITY_KEY)||'Santiago, Chile';
+ box.innerHTML='<div class="small">⏳ Consultando el pronóstico…</div>';
+ try{
+   const geo=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city.split(',')[0])+'&count=1&language=es&format=json').then(r=>r.json());
+   if(!geo.results||!geo.results.length)throw new Error('Ciudad no encontrada');
+   const g=geo.results[0];
+   const url='https://api.open-meteo.com/v1/forecast?latitude='+g.latitude+'&longitude='+g.longitude+'&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FSantiago&forecast_days=2';
+   const w=await fetch(url).then(r=>r.json());
+   const iconText=weatherCodeText(w.daily.weather_code[1]);
+   const max=Math.round(w.daily.temperature_2m_max[1]);
+   const min=Math.round(w.daily.temperature_2m_min[1]);
+   const rain=w.daily.precipitation_probability_max[1];
+   const text='Mañana van a haber '+max+' grados, con mínima de '+min+' y estará '+iconText[1]+'.'+(rain!=null?' Probabilidad de lluvia: '+rain+'%.':'');
+   box.innerHTML='<div class="weatherMain"><div class="weatherIcon">'+iconText[0]+'</div><div><div class="weatherTemp">'+max+'°C</div><div class="weatherDetails">Mínima '+min+'°C · '+iconText[1]+(rain!=null?' · lluvia '+rain+'%':'')+'</div></div></div><p style="margin-bottom:0"><b>'+text+'</b></p><div class="small">📍 '+g.name+(g.admin1?', '+g.admin1:'')+'</div>';
+   localStorage.setItem(WEATHER_LAST_KEY,JSON.stringify({date:keyDate(today()),text,max,min,condition:iconText[1],rain}));
+ }catch(e){
+   box.innerHTML='<div class="small">No pude consultar el tiempo ahora. Revisa tu conexión e inténtalo nuevamente.</div>';
+ }
+}
+function testWeatherVoice(){
+ const raw=localStorage.getItem(WEATHER_LAST_KEY);
+ if(raw){const x=JSON.parse(raw);speak('Natalia: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
+ else {loadWeather(true).then(()=>setTimeout(testWeatherVoice,500));}
+}
+function checkEveningWeather(){
+ const c=localClock(),todayKey=keyDate(today()),last=localStorage.getItem('natWeatherSpokenV1');
+ if(c.hour===19 && c.minute===0 && last!==todayKey){
+   localStorage.setItem('natWeatherSpokenV1',todayKey);
+   const raw=localStorage.getItem(WEATHER_LAST_KEY);
+   if(raw){const x=JSON.parse(raw);notifyUser('Natalia · Tiempo de mañana','Mañana: '+x.max+'°C, '+x.condition+'.','Natalia: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
+   else loadWeather(false).then(()=>setTimeout(testWeatherVoice,500));
+ }
+}
+function startAssistantChecks(){
+ updateNotifyStatus();
+ loadWeather(false);
+ checkImportantReminders(); checkEveningWeather();
+ setInterval(()=>{checkImportantReminders();checkEveningWeather();},15000);
 }
 
 function speak(t){
@@ -912,6 +1004,7 @@ if(e.key==='Enter')askNatalia();
 
 render();
 renderAvatar();
+startAssistantChecks();
 const savedAvatar=localStorage.getItem(AVATAR_KEY);
 if(savedAvatar)updateAvatarIcon(savedAvatar);
 </script>
