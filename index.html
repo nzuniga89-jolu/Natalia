@@ -80,9 +80,9 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <div class="card"><h2>🧳 Qué llevar a sala cuna</h2><div id="routine"></div></div>
 </section>
 
-<section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button></div></div></section>
+<section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado. También puedes decir: “Natalia, agrega pan a compras”.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button><button class="mic" onclick="startShoppingListening()" aria-label="Agregar compra por voz">🎙️</button></div></div></section>
 
-<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><div class="item"><span class="badge">JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
+<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><p class="small">Agrega avisos con fecha y hora. Natalia intentará avisarte y decirlos en voz alta mientras la app esté abierta.</p><div class="add" style="flex-wrap:wrap"><input id="reminderDate" type="date" style="flex:1;min-width:140px"><input id="reminderTime" type="time" value="07:59" style="flex:1;min-width:110px"><input id="reminderText" placeholder="¿Qué debe recordar Natalia?" style="flex:2;min-width:200px"><button class="action" onclick="addImportantReminder()">➕ Agregar aviso</button></div><div id="importantList" style="margin-top:12px"></div><div class="item"><span class="badge">FIJO · JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b><br><span class="small">Este aviso viene incluido en Natalia.</span></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
 
 <section id="calendario">
 <div class="card">
@@ -165,6 +165,8 @@ const NOTIFY_KEY='natNotifyV1';
 const WEATHER_CITY_KEY='natWeatherCityV1';
 const WEATHER_LAST_KEY='natWeatherLastV1';
 const REMINDER_LAST_KEY='natReminderLastV1';
+const IMPORTANT_KEY='natImportantV1';
+const DELETED_EVENTS_KEY='natDeletedEventsV1';
 
 function tab(id,b){
 document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));
@@ -249,6 +251,42 @@ function notifyUser(title,body,speechText){
 function localClock(){
  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',hour12:false,weekday:'short'}).formatToParts(new Date());
  return {hour:Number(p.find(x=>x.type==='hour').value),minute:Number(p.find(x=>x.type==='minute').value),weekday:p.find(x=>x.type==='weekday').value};
+}
+function getImportantReminders(){try{return JSON.parse(localStorage.getItem(IMPORTANT_KEY)||'[]');}catch(e){return [];} }
+function saveImportantReminders(a){localStorage.setItem(IMPORTANT_KEY,JSON.stringify(a));}
+function addImportantReminder(){
+ const date=document.getElementById('reminderDate').value,time=document.getElementById('reminderTime').value,text=document.getElementById('reminderText').value.trim();
+ if(!date||!time||!text){alert('Completa fecha, hora y aviso.');return;}
+ const a=getImportantReminders();a.push({id:Date.now()+Math.random(),date,time,text});saveImportantReminders(a);document.getElementById('reminderText').value='';renderImportantReminders();
+}
+function deleteImportantReminder(id){saveImportantReminders(getImportantReminders().filter(x=>x.id!==id));renderImportantReminders();}
+function renderImportantReminders(){
+ const box=document.getElementById('importantList');if(!box)return;const a=getImportantReminders().sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time));
+ box.innerHTML=a.length?a.map(x=>`<div class="item"><div class="eventRow"><div class="eventText"><span class="badge">${x.date} · ${x.time}</span><br><b>🔔 ${escapeHtml(x.text)}</b></div><button class="deleteBtn" onclick="deleteImportantReminder(${x.id})">🗑️ Borrar</button></div></div>`).join(''):'<div class="small">No tienes avisos importantes personalizados.</div>';
+}
+function checkCustomReminders(){
+ const c=localClock(),todayKey=keyDate(today()),nowHM=String(c.hour).padStart(2,'0')+':'+String(c.minute).padStart(2,'0');
+ const lastKey='natCustomReminderLastV1_'+todayKey+'_'+nowHM;
+ if(localStorage.getItem('natCustomReminderFired')===lastKey)return;
+ const hits=getImportantReminders().filter(x=>x.date===todayKey&&x.time===nowHM);
+ if(hits.length){localStorage.setItem('natCustomReminderFired',lastKey);hits.forEach(x=>notifyUser('Natalia · Aviso importante',x.text,'Natalia: son las '+x.time+'. Recuerda '+x.text+'.'));}
+}
+function parseShoppingVoice(text){
+ let s=text.trim();let n=s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ if(!/(agrega|anota|suma|compra|comprar|pon|mete).*(compra|lista)|^(agrega|anota|suma|pon|mete)\b/.test(n))return null;
+ let clean=s.replace(/^(natalia[,.]?\s*)?(agrega|agregame|anota|anotame|suma|sumame|pon|mete)\s*/i,'').replace(/\b(a|en)\s+(la\s+)?(lista|compras)\b/i,'').replace(/^compras\s+/i,'').trim();
+ if(!clean)return null;return clean.replace(/[.!?]+$/,'').trim();
+}
+function tryAddShoppingVoice(text){const item=parseShoppingVoice(text);if(!item)return false;const l=list();const parts=item.split(/\s*,\s*|\s+y\s+/i).map(x=>x.trim()).filter(Boolean);parts.forEach(x=>{if(!l.some(v=>v.toLowerCase()===x.toLowerCase()))l.push(x);});localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));render();const msg=parts.length===1?'Listo. Agregué '+parts[0]+' a la lista de compras.':'Listo. Agregué '+parts.length+' productos a la lista de compras.';const box=document.getElementById('answer');if(box){box.style.display='block';box.innerHTML='<b>🛒 Compras:</b> '+parts.map(escapeHtml).join(', ');}speak(msg);return true;}
+function tryShoppingDeleteVoice(text){
+ const n=text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ if(!/^(borra|elimina|quita|saca)\b/.test(n)||!/(compra|lista|producto)/.test(n))return false;
+ let item=text.replace(/^(natalia[,.]?\s*)?(borra|elimina|quita|saca)\s*/i,'').replace(/\b(de\s+)?(la\s+)?(lista\s+de\s+)?compras?\b/i,'').trim().replace(/[.!?]+$/,'');
+ const l=list(),idx=l.findIndex(x=>x.toLowerCase()===item.toLowerCase());if(idx<0){speak('No encontré '+item+' en la lista de compras.');return true;}l.splice(idx,1);localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));render();speak('Listo. Borré '+item+' de la lista de compras.');return true;
+}
+function startShoppingListening(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('El reconocimiento de voz no está disponible.');return;}
+ const r=new SR();r.lang='es-CL';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{const t=e.results[0][0].transcript;if(!tryAddShoppingVoice(t))alert('Di algo como: “Natalia, agrega pan y leche a compras”.');};r.start();
 }
 function checkImportantReminders(){
  const c=localClock();
@@ -357,7 +395,9 @@ seen.add(k);return true;
 localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(clean));
 }
 
-function allFixedEvents(){return DATA.events.concat(getImportedEvents());}
+function getDeletedEvents(){try{return JSON.parse(localStorage.getItem(DELETED_EVENTS_KEY)||'[]');}catch(e){return [];} }
+function eventKey(e){return e[0]+'|'+e[1]+'|'+e[2];}
+function allFixedEvents(){const deleted=new Set(getDeletedEvents());return DATA.events.concat(getImportedEvents()).filter(e=>!deleted.has(eventKey(e)));}
 
 function eventsForDates(from,to,category){
 return allFixedEvents().filter(e=>{
@@ -628,17 +668,17 @@ return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'
 }
 
 function removeAgendaEvent(date,category,text){
-  const imported=getImportedEvents().filter(e=>!(e[0]===date && e[1]===category && e[2]===text));
-  localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(imported));
-
+  const key=eventKey([date,category,text]);
+  const deleted=getDeletedEvents();
+  if(!deleted.includes(key)){deleted.push(key);localStorage.setItem(DELETED_EVENTS_KEY,JSON.stringify(deleted));}
   let person=null;
   if(category==='Colegio'||category==='Josefina') person='josefina';
   else if(category==='Sala cuna'||category==='Luciana') person='luciana';
   else if(category==='general') person='general';
-
+  const imported=getImportedEvents().filter(e=>eventKey(e)!==key);
+  localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(imported));
   const saved=getSavedEvents().filter(e=>!(e.date===date && (!person||e.person===person) && e.text===text));
   localStorage.setItem(USER_EVENTS_KEY,JSON.stringify(saved));
-  selectedCalendarDate=date;
   render();
 }
 
@@ -980,7 +1020,7 @@ document.getElementById('schoolHome').innerHTML=eventsHtml(allFixedEvents().filt
 document.getElementById('nursery').innerHTML=eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
 document.getElementById('nurseryHome').innerHTML=eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
 document.getElementById('routine').innerHTML=DATA.nursery_daily.concat(DATA.nursery_clothing,DATA.nursery_medications).map(x=>'<div class="item">• '+x+'</div>').join('');
-document.getElementById('shopping').innerHTML=list().map((x,i)=>'<div class="item"><label><input type="checkbox" onchange="del('+i+')"> '+x+'</label></div>').join('');
+document.getElementById('shopping').innerHTML=list().map((x,i)=>'<div class="item"><div class="eventRow"><label class="eventText"><input type="checkbox" onchange="del('+i+')"> '+escapeHtml(x)+'</label><button class="deleteBtn" onclick="del('+i+')">🗑️ Borrar</button></div></div>').join('');
 renderCalendar();
 }
 
