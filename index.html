@@ -1,12 +1,17 @@
 <!doctype html>
 <html lang="es">
 <head>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<meta name="theme-color" content="#6d5ce7">
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#6d5ce7">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Natalia</title>
+<title>Jolu</title>
 
 <!-- Librerías gratuitas: funcionan desde GitHub Pages -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
@@ -42,17 +47,39 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 .voiceRow{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.voiceRow select{flex:1;min-width:180px;border:1px solid #ddd8ea;border-radius:13px;padding:12px;background:#fff;font-size:14px}.voiceRow input[type="range"]{flex:1;min-width:140px;accent-color:var(--purple)}.voiceValue{min-width:42px;text-align:right;font-weight:800;color:var(--purple)}
 .step{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.stepnum{min-width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:900}.tip{background:#fff8df;border-radius:14px;padding:12px;margin-top:12px;font-size:13px}
 @media(max-width:430px){nav button{font-size:11px;padding:9px 3px}.quick{grid-template-columns:1fr 1fr}.card{padding:16px}}
+
+/* ===== JOLU · HOME PREMIUM ===== */
+:root{--purple:#6654df;--purple2:#8c73ee;--deep:#33265c;--bg:#f6f3fc;--soft:#eeebfa;--text:#292536;--muted:#77718a;--gold:#d9a56d}
+body{background:linear-gradient(180deg,#f7f5fc 0%,#f3f0fa 100%)}
+header{background:linear-gradient(135deg,#5140bd 0%,#715be2 55%,#9277ee 100%);padding:18px 16px 20px;border-radius:0 0 30px 30px;box-shadow:0 10px 28px rgba(48,34,105,.18)}
+.header-title h1{font-size:31px;letter-spacing:-.7px;font-weight:900}.header-title p{font-size:14px;opacity:.9}
+.settings-button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px)}
+nav{margin:12px 0 14px;padding:5px;border-radius:18px;background:rgba(255,255,255,.78);box-shadow:0 5px 18px rgba(50,38,92,.08);backdrop-filter:blur(10px)}
+nav button{border-radius:14px;padding:11px 5px;background:transparent;color:#625886;font-size:12px;transition:.18s ease}
+nav button.active{background:linear-gradient(135deg,#6654df,#806be9);box-shadow:0 5px 14px rgba(102,84,223,.25)}
+.card{border:1px solid rgba(102,84,223,.07);box-shadow:0 8px 26px rgba(49,38,92,.08)}
+.hero{position:relative;overflow:hidden;text-align:left;padding:25px 20px 20px;background:radial-gradient(circle at 90% 0%,rgba(140,115,238,.17),transparent 34%),linear-gradient(145deg,#fff 0%,#fbfaff 100%)}
+.hero:after{content:"";position:absolute;width:150px;height:150px;right:-75px;top:-75px;border:1px solid rgba(217,165,109,.28);border-radius:50%}
+.jolu-home-brand{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.jolu-home-brand img{width:54px;height:54px;border-radius:16px;object-fit:cover;box-shadow:0 7px 18px rgba(64,45,130,.18)}
+.jolu-home-brand .eyebrow{margin:0;color:#8a79ad;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase}
+.hero h2{font-size:27px;letter-spacing:-.7px;margin:0 0 5px}.hero p{font-size:15px;line-height:1.45}
+.quick{gap:11px;margin-top:18px}.quick button{min-height:108px;border:1px solid rgba(102,84,223,.06);background:linear-gradient(145deg,#f2effc,#ece8fa);border-radius:20px;padding:17px 12px;color:#4d4178;font-size:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8);transition:transform .16s ease,box-shadow .16s ease}
+.quick button:active{transform:scale(.98);box-shadow:0 3px 10px rgba(70,55,130,.10)}.quick button span{font-size:29px;margin-bottom:9px}
+.weatherCard{background:linear-gradient(145deg,#fff,#faf9ff);padding:20px}.weatherCard h2{font-size:21px}.ask{background:linear-gradient(145deg,#fff,#f9f7ff)}.ask h2{font-size:21px}
+@media(max-width:430px){.hero{padding:22px 17px 18px}.hero h2{font-size:25px}.quick button{min-height:103px}nav button{font-size:11px}}
+
 </style>
 </head>
 
 <body>
-<header><div class="header-inner"><button class="avatar-button" onclick="changeAvatar()" aria-label="Cambiar foto de perfil"><div id="avatarBox" class="avatar-placeholder">N</div><span class="avatar-edit">✎</span></button><div class="header-title"><h1>Natalia</h1><p>Tu asistente personal</p></div><button class="settings-button" onclick="openSettings()" aria-label="Abrir configuraciones">⚙️</button></div></header><input id="avatarFile" type="file" accept="image/*" style="display:none" onchange="saveAvatar(this.files[0])">
+<header><div class="header-inner"><button class="avatar-button" onclick="changeAvatar()" aria-label="Cambiar foto de perfil"><div id="avatarBox" class="avatar-placeholder">N</div><span class="avatar-edit">✎</span></button><div class="header-title"><h1>Jolu</h1><p>Tu asistente personal</p></div><button class="settings-button" onclick="openSettings()" aria-label="Abrir configuraciones">⚙️</button></div></header><input id="avatarFile" type="file" accept="image/*" style="display:none" onchange="saveAvatar(this.files[0])">
 <div id="settingsOverlay" class="settings-overlay" onclick="closeSettings(event)"><div class="settings-panel" onclick="event.stopPropagation()">
-<div class="settings-head"><h2>⚙️ Configuraciones</h2><button class="close-settings" onclick="closeSettings()">×</button></div><p class="small">Personaliza a Natalia sin tocar el código.</p>
+<div class="settings-head"><h2>⚙️ Configuraciones</h2><button class="close-settings" onclick="closeSettings()">×</button></div><p class="small">Personaliza a Jolu sin tocar el código.</p>
 <div class="settings-section"><h3>👤 Avatar</h3><p class="small">Tu foto se guarda en este teléfono.</p><div class="avatar-settings"><div id="settingsAvatarPreview" class="avatar-preview">N</div><div class="settings-actions"><button class="action" onclick="changeAvatar()">📷 Cambiar foto</button><button class="dangerBtn" onclick="removeAvatar()">🗑️ Quitar foto</button></div></div></div>
-<div class="settings-section"><h3>🗣️ Voz de Natalia</h3><p class="small">Elige la voz, velocidad y tono.</p><div class="voiceRow"><select id="voiceSelect" aria-label="Voz de Natalia"></select></div><div class="voiceRow"><span class="small">Velocidad</span><input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="0.95" oninput="updateVoiceLabel()"><span id="voiceRateValue" class="voiceValue">0.95</span></div><div class="voiceRow"><span class="small">Tono</span><input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" oninput="updateVoiceLabel()"><span id="voicePitchValue" class="voiceValue">1.00</span></div><button class="action" onclick="saveVoiceSettings()">💾 Guardar voz</button> <button class="action" onclick="testSelectedVoice()">🔊 Probar</button><span id="voiceStatus" class="small" style="margin-left:8px"></span></div>
+<div class="settings-section"><h3>🗣️ Voz de Jolu</h3><p class="small">Elige la voz, velocidad y tono.</p><div class="voiceRow"><select id="voiceSelect" aria-label="Voz de Jolu"></select></div><div class="voiceRow"><span class="small">Velocidad</span><input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="0.95" oninput="updateVoiceLabel()"><span id="voiceRateValue" class="voiceValue">0.95</span></div><div class="voiceRow"><span class="small">Tono</span><input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" oninput="updateVoiceLabel()"><span id="voicePitchValue" class="voiceValue">1.00</span></div><button class="action" onclick="saveVoiceSettings()">💾 Guardar voz</button> <button class="action" onclick="testSelectedVoice()">🔊 Probar</button><span id="voiceStatus" class="small" style="margin-left:8px"></span></div>
 
-<div class="settings-section"><h3>🔔 Avisos importantes</h3><p class="small">Permite las notificaciones para que Natalia pueda avisarte.</p><button class="action" onclick="enableNotifications()">🔔 Activar avisos</button><span id="notifyStatus" class="small" style="margin-left:8px"></span></div>
+<div class="settings-section"><h3>🔔 Avisos importantes</h3><p class="small">Permite las notificaciones para que Jolu pueda avisarte.</p><button class="action" onclick="enableNotifications()">🔔 Activar avisos</button><span id="notifyStatus" class="small" style="margin-left:8px"></span></div>
 </div></div>
 <main>
 <nav>
@@ -65,7 +92,11 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 
 <section id="hoy" class="activeSection">
 <div class="card hero">
-<h2>¿Qué necesitas?</h2><p>Habla, pregunta o agrega algo. Natalia lo guarda por ti.</p>
+<div class="jolu-home-brand">
+  <img src="./icons/icon-192.png" alt="Jolu">
+  <div><p class="eyebrow">JOLU</p><p style="margin:2px 0 0;color:#51467d;font-weight:800;font-size:13px">Tu asistente personal</p></div>
+</div>
+<h2>¿Qué necesitas?</h2><p>Habla, pregunta o agrega algo. Jolu lo guarda por ti.</p>
 <div class="quick">
 <button onclick="document.getElementById('question').focus()"><span>💬</span>Preguntar</button>
 <button onclick="startListening()"><span>🎙️</span>Hablar</button>
@@ -74,9 +105,9 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 </div>
 </div>
 <div class="card weatherCard"><h2>🌤️ El tiempo de mañana</h2><div id="weatherBox"><div class="small">Cargando pronóstico…</div></div><div class="notifyRow"><button class="action" onclick="loadWeather(true)">🔄 Actualizar</button><button class="action" onclick="testWeatherVoice()">🔊 Probar aviso de las 19:00</button></div></div>
-<div class="card ask"><h2>💬 Pregúntale a Natalia</h2><p class="small">Ej.: “¿Qué tengo mañana?”, “¿Qué tiene Josefina el viernes?” o “¿Qué tiene Luciana esta semana?”</p>
-<div class="askbox"><input id="question" autocomplete="off" placeholder="Escribe o toca 🎙️"><button class="mic" id="mic" onclick="startListening()" aria-label="Hablar">🎙️</button><button class="action" onclick="askNatalia()">Enviar</button></div><div id="answer" class="answer" style="display:none"></div></div>
-<div class="card"><span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span><p><b>Pedir estacionamiento</b></p><p class="small">Natalia te recuerda pedir estacionamiento.</p><button class="action" onclick="speak(DATA.parking.message)">🔊 Probar</button></div>
+<div class="card ask"><h2>💬 Pregúntale a Jolu</h2><p class="small">Ej.: “¿Qué tengo mañana?”, “¿Qué tiene Josefina el viernes?” o “¿Qué tiene Luciana esta semana?”</p>
+<div class="askbox"><input id="question" autocomplete="off" placeholder="Escribe o toca 🎙️"><button class="mic" id="mic" onclick="startListening()" aria-label="Hablar">🎙️</button><button class="action" onclick="askJolu()">Enviar</button></div><div id="answer" class="answer" style="display:none"></div></div>
+<div class="card"><span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span><p><b>Pedir estacionamiento</b></p><p class="small">Jolu te recuerda pedir estacionamiento.</p><button class="action" onclick="speak(DATA.parking.message)">🔊 Probar</button></div>
 <div class="card"><h2>🎒 Josefina — Colegio</h2><div id="schoolHome"></div></div>
 <div class="card"><h2>👶 Luciana — Sala cuna</h2><div id="nurseryHome"></div></div>
 </section>
@@ -87,26 +118,26 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <div class="card"><h2>🧳 Qué llevar a sala cuna</h2><div id="routine"></div></div>
 </section>
 
-<section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado. También puedes decir: “Natalia, agrega pan a compras”.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button><button class="mic" onclick="startShoppingListening()" aria-label="Agregar compra por voz">🎙️</button></div></div></section>
+<section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado. También puedes decir: “Jolu, agrega pan a compras”.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button><button class="mic" onclick="startShoppingListening()" aria-label="Agregar compra por voz">🎙️</button></div></div></section>
 
-<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><p class="small">Agrega avisos con fecha y hora. Natalia intentará avisarte y decirlos en voz alta mientras la app esté abierta.</p><div class="add" style="flex-wrap:wrap"><input id="reminderDate" type="date" style="flex:1;min-width:140px"><input id="reminderTime" type="time" value="07:59" style="flex:1;min-width:110px"><input id="reminderText" placeholder="¿Qué debe recordar Natalia?" style="flex:2;min-width:200px"><button class="action" onclick="addImportantReminder()">➕ Agregar aviso</button></div><div id="importantList" style="margin-top:12px"></div><div class="item"><span class="badge">FIJO · JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b><br><span class="small">Este aviso viene incluido en Natalia.</span></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
+<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><p class="small">Agrega avisos con fecha y hora. Jolu intentará avisarte y decirlos en voz alta mientras la app esté abierta.</p><div class="add" style="flex-wrap:wrap"><input id="reminderDate" type="date" style="flex:1;min-width:140px"><input id="reminderTime" type="time" value="07:59" style="flex:1;min-width:110px"><input id="reminderText" placeholder="¿Qué debe recordar Jolu?" style="flex:2;min-width:200px"><button class="action" onclick="addImportantReminder()">➕ Agregar aviso</button></div><div id="importantList" style="margin-top:12px"></div><div class="item"><span class="badge">FIJO · JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b><br><span class="small">Este aviso viene incluido en Jolu.</span></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
 
 <section id="calendario">
 <div class="card">
 <h2>📅 Agregar un calendario</h2>
-<p class="small">Elige a tu hija y sube una foto o PDF. Natalia prepara el archivo y ChatGPT lo interpreta directamente.</p>
+<p class="small">Elige a tu hija y sube una foto o PDF. Jolu prepara el archivo y ChatGPT lo interpreta directamente.</p>
 <div class="uploadBox">
 <div class="uploadRow"><select id="uploadPerson" class="personSelect"><option value="josefina">Josefina — Colegio</option><option value="luciana">Luciana — Sala cuna</option></select>
 <label for="calendarFile" class="fileLabel">📎 Elegir foto o PDF</label><input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()"></div>
 <div id="uploadStatus" class="status"></div>
 <div id="chatBox" class="chatBox hidden">
-<h3 style="margin-top:0">🤖 Natalia + ChatGPT</h3>
-<p class="small">Natalia preparó tu archivo. ChatGPT verá la imagen o PDF y lo ordenará por fecha.</p>
+<h3 style="margin-top:0">🤖 Jolu + ChatGPT</h3>
+<p class="small">Jolu preparó tu archivo. ChatGPT verá la imagen o PDF y lo ordenará por fecha.</p>
 <button class="action full" onclick="sendToChatGPT()">🤖 Enviar archivo a ChatGPT</button>
 <div id="chatInstructions" class="tip hidden">
 <b>Cuando ChatGPT termine:</b><br>
 1. Copia el JSON que te entregue.<br>
-2. Vuelve a Natalia.<br>
+2. Vuelve a Jolu.<br>
 3. Pégalo aquí y toca <b>Agregar al calendario</b>.
 </div>
 <textarea id="chatResult" placeholder="Pega aquí la respuesta de ChatGPT…" aria-label="Respuesta de ChatGPT"></textarea>
@@ -117,15 +148,15 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><button class="action" onclick="changeCalendarMonth(-1)" style="margin-top:0">‹</button><h2 id="calendarTitle" style="margin:0;text-align:center"></h2><button class="action" onclick="changeCalendarMonth(1)" style="margin-top:0">›</button></div><div id="calendarGrid"></div><div id="calendarEvents" style="margin-top:14px"></div></div>
 </section>
 </main>
-<button class="fab" onclick="startListening()" aria-label="Hablar con Natalia">🎙️</button>
+<button class="fab" onclick="startListening()" aria-label="Hablar con Jolu">🎙️</button>
 <script>
 const DATA={
-appName:'Natalia',
+appName:'Jolu',
 parking:{
 days:[4,5],
 time:'07:59',
 important:true,
-message:'Natalia, son las 7:59. Recuerda pedir estacionamiento.'
+message:'Jolu, son las 7:59. Recuerda pedir estacionamiento.'
 },
 shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],
 events:[
@@ -257,7 +288,7 @@ function renderAvatar(){
  const saved=localStorage.getItem(AVATAR_KEY);
  if(saved){
   box.className='';
-  box.innerHTML='<img class="profile-photo" src="'+saved+'" alt="Foto de perfil de Natalia">';
+  box.innerHTML='<img class="profile-photo" src="'+saved+'" alt="Foto de perfil de Jolu">';
  }else{
   box.className='avatar-placeholder';
   box.textContent='N';
@@ -269,7 +300,7 @@ async function enableNotifications(){
   const p=await Notification.requestPermission();
   localStorage.setItem(NOTIFY_KEY,p==='granted'?'1':'0');
   updateNotifyStatus();
-  if(p==='granted'){new Notification('Natalia',{body:'Listo. Los avisos importantes están activados.'}); return true;}
+  if(p==='granted'){new Notification('Jolu',{body:'Listo. Los avisos importantes están activados.'}); return true;}
   alert('Las notificaciones no fueron autorizadas. Puedes activarlas desde los permisos del navegador.');
   return false;
 }
@@ -303,7 +334,7 @@ function checkCustomReminders(){
  const lastKey='natCustomReminderLastV1_'+todayKey+'_'+nowHM;
  if(localStorage.getItem('natCustomReminderFired')===lastKey)return;
  const hits=getImportantReminders().filter(x=>x.date===todayKey&&x.time===nowHM);
- if(hits.length){localStorage.setItem('natCustomReminderFired',lastKey);hits.forEach(x=>notifyUser('Natalia · Aviso importante',x.text,'Natalia: son las '+x.time+'. Recuerda '+x.text+'.'));}
+ if(hits.length){localStorage.setItem('natCustomReminderFired',lastKey);hits.forEach(x=>notifyUser('Jolu · Aviso importante',x.text,'Jolu: son las '+x.time+'. Recuerda '+x.text+'.'));}
 }
 function parseShoppingVoice(text){
  let s=text.trim();let n=s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -320,7 +351,7 @@ function tryShoppingDeleteVoice(text){
 }
 function startShoppingListening(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('El reconocimiento de voz no está disponible.');return;}
- const r=new SR();r.lang='es-CL';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{const t=e.results[0][0].transcript;if(!tryAddShoppingVoice(t))alert('Di algo como: “Natalia, agrega pan y leche a compras”.');};r.start();
+ const r=new SR();r.lang='es-CL';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{const t=e.results[0][0].transcript;if(!tryAddShoppingVoice(t))alert('Di algo como: “Jolu, agrega pan y leche a compras”.');};r.start();
 }
 function checkImportantReminders(){
  const c=localClock();
@@ -328,7 +359,7 @@ function checkImportantReminders(){
  const last=localStorage.getItem(REMINDER_LAST_KEY);
  if(c.hour===7 && c.minute===59 && DATA.parking.days.includes(today().getDay()) && last!==todayKey){
    localStorage.setItem(REMINDER_LAST_KEY,todayKey);
-   notifyUser('Natalia · Aviso importante','Son las 7:59. Recuerda pedir estacionamiento.','Natalia: son las 7:59. Recuerda pedir estacionamiento.');
+   notifyUser('Jolu · Aviso importante','Son las 7:59. Recuerda pedir estacionamiento.','Jolu: son las 7:59. Recuerda pedir estacionamiento.');
  }
 }
 function weatherCodeText(code){
@@ -366,7 +397,7 @@ async function loadWeather(manual=false){
 }
 function testWeatherVoice(){
  const raw=localStorage.getItem(WEATHER_LAST_KEY);
- if(raw){const x=JSON.parse(raw);speak('Natalia: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
+ if(raw){const x=JSON.parse(raw);speak('Jolu: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
  else {loadWeather(true).then(()=>setTimeout(testWeatherVoice,500));}
 }
 function checkEveningWeather(){
@@ -374,7 +405,7 @@ function checkEveningWeather(){
  if(c.hour===19 && c.minute===0 && last!==todayKey){
    localStorage.setItem('natWeatherSpokenV1',todayKey);
    const raw=localStorage.getItem(WEATHER_LAST_KEY);
-   if(raw){const x=JSON.parse(raw);notifyUser('Natalia · Tiempo de mañana','Mañana: '+x.max+'°C, '+x.condition+'.','Natalia: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
+   if(raw){const x=JSON.parse(raw);notifyUser('Jolu · Tiempo de mañana','Mañana: '+x.max+'°C, '+x.condition+'.','Jolu: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
    else loadWeather(false).then(()=>setTimeout(testWeatherVoice,500));
  }
 }
@@ -431,7 +462,7 @@ function saveVoiceSettings(){
     }
   }
 }
-function testSelectedVoice(){const sel=document.getElementById('voiceSelect'),r=document.getElementById('voiceRate'),p=document.getElementById('voicePitch');speakWithSettings('Hola, soy Natalia. Esta es la voz que elegiste.',{voiceName:sel?sel.value:'',rate:r?Number(r.value):.95,pitch:p?Number(p.value):1});}
+function testSelectedVoice(){const sel=document.getElementById('voiceSelect'),r=document.getElementById('voiceRate'),p=document.getElementById('voicePitch');speakWithSettings('Hola, soy Jolu. Esta es la voz que elegiste.',{voiceName:sel?sel.value:'',rate:r?Number(r.value):.95,pitch:p?Number(p.value):1});}
 function speakWithSettings(t,settings){
   if(!('speechSynthesis' in window)){alert('La voz no está disponible en este navegador.');return;}
   speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); const v=getAvailableVoices().find(v=>v.name===settings.voiceName);
@@ -718,7 +749,7 @@ const answerPrefix=category==='colegio'||category==='josefina'?'Para Josefina ti
 return{text:answerPrefix+': '+lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),html:'<div><b>'+answerPrefix+':</b></div>'+lines.join('<br>')};
 }
 
-function askNatalia(){
+function askJolu(){
 const q=document.getElementById('question').value.trim();if(!q)return;
 if(tryDeleteSpokenEvent(q)){render();document.getElementById('question').value='';return;}
 if(tryAddSpokenEvent(q)){render();document.getElementById('question').value='';return;}
@@ -737,7 +768,7 @@ recognition.onresult=e=>{
 const transcript=e.results[0][0].transcript;
 document.getElementById('question').value=transcript;
 if(tryDeleteSpokenEvent(transcript)){render();document.getElementById('question').value='';}
-else if(!tryAddSpokenEvent(transcript))askNatalia();else{render();document.getElementById('question').value='';}
+else if(!tryAddSpokenEvent(transcript))askJolu();else{render();document.getElementById('question').value='';}
 };
 recognition.onerror=()=>{};
 recognition.onend=()=>{mic.classList.remove('listening');recognition=null;};
@@ -1018,7 +1049,7 @@ async function sendToChatGPT(){
  if(instructions)instructions.classList.remove('hidden');
  try{
    if(navigator.share && navigator.canShare && navigator.canShare({files:[uploadedCalendarFile]})){
-     await navigator.share({title:'Calendario de Natalia',text:prompt,files:[uploadedCalendarFile]});
+     await navigator.share({title:'Calendario de Jolu',text:prompt,files:[uploadedCalendarFile]});
      return;
    }
  }catch(e){
@@ -1083,8 +1114,8 @@ render();
 renderCalendar();
 document.getElementById('chatResult').value='';
 document.getElementById('chatBox').classList.add('hidden');
-setUploadStatus('🎉 Listo. Se agregaron '+events.length+' actividades de '+(extractedPerson==='josefina'?'Josefina':'Luciana')+' a Natalia.');
-alert('✅ Calendario agregado a Natalia.');
+setUploadStatus('🎉 Listo. Se agregaron '+events.length+' actividades de '+(extractedPerson==='josefina'?'Josefina':'Luciana')+' a Jolu.');
+alert('✅ Calendario agregado a Jolu.');
 }catch(err){
 alert('❌ No pude leer la respuesta. Copia las líneas que te entregue ChatGPT y pégalas aquí.');
 console.error(err);
@@ -1120,7 +1151,7 @@ render();
 }
 
 document.getElementById('question').addEventListener('keydown',e=>{
-if(e.key==='Enter')askNatalia();
+if(e.key==='Enter')askJolu();
 });
 
 render();
