@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6d5ce7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Natalia</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f3fb;color:#292536;font-family:system-ui,sans-serif}
+header{background:linear-gradient(135deg,#6d5ce7,#8d72f2);color:white;padding:26px 18px;border-radius:0 0 28px 28px}
+h1{margin:0;font-size:32px}
+header p{margin:5px 0 0;opacity:.9}
+main{max-width:760px;margin:auto;padding:14px 14px 90px}
+nav{display:flex;gap:7px;overflow:auto;margin-bottom:8px}
+nav button{border:0;border-radius:99px;padding:10px 14px;background:#e8e4f8;color:#51467d;font-weight:800;white-space:nowrap}
+nav button.active{background:#6d5ce7;color:white}
+section{display:none}
+.activeSection{display:block}
+.card{background:white;border-radius:20px;padding:16px;margin:10px 0;box-shadow:0 5px 18px #32245c12}
+.item{padding:12px 0;border-bottom:1px solid #eee;line-height:1.4}
+.item:last-child{border:0}
+.date{font-size:12px;text-transform:uppercase;color:#6d5ce7;font-weight:900}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#ffe7ed;color:#a51f3d;font-size:12px;font-weight:900}
+button.action{border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;color:white;font-weight:800;margin-top:8px}
+.ask{margin:10px 0}
+.askbox{display:flex;gap:8px;align-items:center}
+.askbox input{flex:1;min-width:0}
+.mic{width:48px;height:48px;border:0;border-radius:14px;background:#6d5ce7;color:white;font-size:22px}
+.mic.listening{background:#c43d69;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.answer{margin-top:12px;background:#f2effd;border-radius:16px;padding:14px;line-height:1.45}
+.answer b{color:#5d4bc0}
+.small{color:#777;font-size:13px}
+.add{display:flex;gap:8px;margin-top:10px}
+.add input{flex:1}
+input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}
+.fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border:0;border-radius:50%;background:#6d5ce7;color:white;font-size:24px;box-shadow:0 8px 25px #33236a40}
+
+.calendar-head{font-size:11px;text-align:center;font-weight:800;color:#777;padding:4px 0;min-width:0}.calendar-day,.calendar-head{min-width:0}.calendar-day{overflow:hidden}
+.calendar-day{min-height:54px;border:1px solid #eee8f7;border-radius:10px;padding:6px;background:white;cursor:pointer}
+.calendar-day.muted{opacity:.38}
+.calendar-day.today{outline:2px solid #6d5ce7}
+.calendar-day.selected{background:#f2effd}
+.calendar-day .num{font-weight:800;font-size:13px}
+.calendar-day .dot{display:block;margin-top:5px;font-size:10px;line-height:1.15;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
+.uploadBox{border:2px dashed #d8d0ef;border-radius:16px;padding:14px;background:#faf9ff;margin-top:12px}
+.uploadRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fileInput{display:none}
+.fileLabel{display:inline-block;border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;color:#fff;font-weight:800;cursor:pointer}
+.personSelect{border:1px solid #ddd8ea;border-radius:13px;padding:11px;background:#fff;font-size:15px;flex:1;min-width:180px}
+.status{margin-top:10px;padding:10px;border-radius:12px;background:#f2effd;display:none}
+.status.ok{display:block}
+.status.error{display:block;background:#fff0f3;color:#a51f3d}
+</style>
+</head>
+<body>
+
+<header>
+<h1>💜 Natalia</h1>
+<p>Tu asistente personal</p>
+</header>
+
+<main>
+<nav>
+<button class="active" onclick="tab('hoy',this)">Hoy</button>
+<button onclick="tab('hijas',this)">Hijas</button>
+<button onclick="tab('compras',this)">Compras</button>
+<button onclick="tab('recordatorios',this)">Recordatorios</button>
+<button onclick="tab('calendario',this)">Calendario</button>
+</nav>
+
+<section id="hoy" class="activeSection">
+<div class="card ask">
+<h2>💬 Habla con Natalia</h2>
+<p class="small">Puedes preguntar: “¿Qué tengo para hoy?”, “¿Qué tengo mañana?”, “¿Qué tengo el jueves?”, “¿Qué tengo el viernes?” o “¿Qué tengo esta semana?”</p>
+<div class="askbox">
+<input id="question" autocomplete="off" placeholder="Pregúntame algo...">
+<button class="mic" id="mic" onclick="startListening()" aria-label="Hablar">🎙️</button>
+<button class="action" onclick="askNatalia()">Preguntar</button>
+</div>
+<div id="answer" class="answer" style="display:none"></div>
+</div>
+
+<div class="card">
+<span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span>
+<p><b>Pedir estacionamiento</b></p>
+<p class="small">Natalia, son las 7:59. Recuerda pedir estacionamiento.</p>
+<button class="action" onclick="speak(DATA.parking.message)">🔊 Probar voz</button>
+</div>
+
+<div class="card">
+<h2>🎒 Colegio — agosto</h2>
+<div id="schoolHome"></div>
+</div>
+
+<div class="card">
+<h2>👶 Sala cuna — agosto</h2>
+<div id="nurseryHome"></div>
+</div>
+</section>
+
+<section id="hijas">
+<div class="card"><h2>🎒 Colegio</h2><div id="school"></div></div>
+<div class="card"><h2>👶 Sala cuna</h2><div id="nursery"></div></div>
+<div class="card"><h2>🧳 Rutina sala cuna</h2><div id="routine"></div></div>
+</section>
+
+<section id="compras">
+<div class="card">
+<h2>🛒 Supermercado</h2>
+<div id="shopping"></div>
+<div class="add">
+<input id="newItem" placeholder="Agregar producto">
+<button class="action" onclick="addItem()">Agregar</button>
+</div>
+<p class="small">Puedes cambiar esta lista cuando quieras.</p>
+</div>
+</section>
+
+<section id="recordatorios">
+<div class="card">
+<h2>🔔 Recordatorios</h2>
+<div class="item"><span class="badge">IMPORTANTE</span><br>Jueves y viernes a las 07:59 — pedir estacionamiento.</div>
+<p class="small">Natalia puede responder preguntas por voz o texto sobre tus actividades.</p>
+</div>
+</section>
+
+<section id="calendario">
+<div class="card">
+  <h2>📎 Subir calendario</h2>
+  <p class="small">Sube el PDF o una foto del calendario y Natalia intentará reconocer automáticamente las fechas y actividades.</p>
+  <div class="uploadBox">
+    <div class="uploadRow">
+      <select id="uploadPerson" class="personSelect">
+        <option value="josefina">Josefina — Colegio</option>
+        <option value="luciana">Luciana — Sala cuna</option>
+      </select>
+      <label for="calendarFile" class="fileLabel">📎 Elegir archivo</label>
+      <input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()">
+    </div>
+    <div id="uploadStatus" class="status"></div>
+  </div>
+</div>
+<div class="card">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <button class="action" onclick="changeCalendarMonth(-1)" style="margin-top:0">‹</button>
+    <h2 id="calendarTitle" style="margin:0;text-align:center"></h2>
+    <button class="action" onclick="changeCalendarMonth(1)" style="margin-top:0">›</button>
+  </div>
+  <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px"></div>
+  <div id="calendarEvents" style="margin-top:14px"></div>
+</div>
+</section>
+</main>
+
+<button class="fab" onclick="startListening()" aria-label="Hablar con Natalia">🎙️</button>
+
+<script>
+const DATA={
+appName:'Natalia',
+
+parking:{
+days:[4,5],
+time:'07:59',
+important:true,
+message:'Natalia, son las 7:59. Recuerda pedir estacionamiento.'
+},
+
+shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],
+
+events:[
+['2026-08-03','Colegio','Inicio evaluaciones estandarizadas de Inglés Tradicional y evaluaciones externas orales.'],
+['2026-08-05','Colegio','Simulacro de refugio.'],
+['2026-08-10','Colegio','Inicio Sociograma 2 BraveUP!.'],
+['2026-08-15','Colegio','Feriado — Asunción de la Virgen.'],
+['2026-08-17','Colegio','Término Sociograma 2 BraveUP! y Digital Citizenship Week.'],
+['2026-08-20','Colegio','Ensayo PAES DEMRE IV medio.'],
+['2026-08-21','Colegio','Ensayo PAES DEMRE IV medio y Green Day: polera o accesorio verde.'],
+['2026-08-24','Colegio','Semana de Evaluación Unidad 3, Lenguaje y Matemática 1° Básico a II Medio. Semana de las Ciencias.'],
+['2026-08-28','Colegio','Jeans Day CAMPUR general de estudiantes.'],
+
+['2026-08-10','Sala cuna','Traer un objeto tecnológico desde el hogar, dentro de un estuche.'],
+['2026-08-12','Sala cuna','Camión de juguete tamaño mediano con nombre para jugar con arena.'],
+['2026-08-13','Sala cuna','Cumpleaños de Constancio N°2.'],
+['2026-08-14','Sala cuna','Día de la familia — horario a confirmar.'],
+['2026-08-18','Sala cuna','Fruta picada para receta, en recipiente pequeño con tapa y nombre.'],
+['2026-08-21','Sala cuna','Venir desde el hogar con vestimenta en blanco y negro.'],
+['2026-08-25','Sala cuna','1 espejo mediano con nombre.'],
+['2026-08-26','Sala cuna','Día de la técnico en párvulos — enviar colación para compartir a las 15:30.'],
+['2026-08-28','Sala cuna','Reunión técnica — retiro a las 15:30.'],
+
+['2026-09-02','Josefina','🎂 Cumpleaños de Josefina.'],
+['2026-09-05','Josefina','💃 Baile de Josefina a las 11:30 — debe estar en el colegio.'],
+['2026-09-05','Josefina','🏫 A las 09:00 hay que estar en el stand del colegio para vender.'],
+['2026-09-01','Sala cuna','Ropa para ensuciar + 1 reciclado de material reciclable por cada niño.'],
+['2026-09-03','Sala cuna','1 botella plástica de 1 litro.'],
+['2026-09-04','Sala cuna','Baile sala cuna — jardín cerrado.'],
+['2026-09-25','Sala cuna','Carrito de Primavera: traer tu mejor outfit acorde a la primavera — desfile.'],
+],
+
+nursery_daily:[
+'Cepillo dental + gel dentífrico',
+'Bolsa para ropa sucia',
+'7 pañales diarios',
+'Babero lavable con mangas'
+],
+
+nursery_clothing:[
+'2 o 3 mudas completas según clima'
+],
+
+nursery_medications:[
+'Antipirético SOS',
+'Termómetro',
+'Crema para coceduras'
+]
+};
+
+function tab(id,b){
+document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));
+document.getElementById(id).classList.add('activeSection');
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+b.classList.add('active');
+}
+
+function speak(t){
+if(!('speechSynthesis' in window)){
+alert('La voz no está disponible en este navegador.');
+return;
+}
+speechSynthesis.cancel();
+const u=new SpeechSynthesisUtterance(t);
+u.lang='es-CL';
+u.rate=.95;
+speechSynthesis.speak(u);
+}
+
+function dateObj(s){
+return new Date(s+'T12:00:00');
+}
+
+function fmtDate(d){
+return d.toLocaleDateString('es-CL',{
+day:'numeric',
+month:'long'
+});
+}
+
+function keyDate(d){
+return d.getFullYear()+'-'+
+String(d.getMonth()+1).padStart(2,'0')+'-'+
+String(d.getDate()).padStart(2,'0');
+}
+
+function today(){
+const parts=new Intl.DateTimeFormat('en-CA',{
+  timeZone:'America/Santiago',
+  year:'numeric',
+  month:'2-digit',
+  day:'2-digit'
+}).formatToParts(new Date());
+
+const y=Number(parts.find(x=>x.type==='year').value);
+const m=Number(parts.find(x=>x.type==='month').value);
+const day=Number(parts.find(x=>x.type==='day').value);
+
+return new Date(y,m-1,day,12,0,0,0);
+}
+
+const IMPORTED_EVENTS_KEY='natImportedEventsV1';
+
+function getImportedEvents(){
+  try{return JSON.parse(localStorage.getItem(IMPORTED_EVENTS_KEY)||'[]');}
+  catch(e){return [];}
+}
+
+function saveImportedEvents(events){
+  const current=getImportedEvents();
+  const merged=current.concat(events||[]);
+  const seen=new Set();
+  const clean=merged.filter(e=>{
+    if(!Array.isArray(e)||e.length<3)return false;
+    const k=e[0]+'|'+e[1]+'|'+e[2];
+    if(seen.has(k))return false;
+    seen.add(k);
+    return true;
+  });
+  localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(clean));
+}
+
+function allFixedEvents(){
+  return DATA.events.concat(getImportedEvents());
+}
+
+function eventsForDates(from,to,category){
+return allFixedEvents().filter(e=>{
+const d=dateObj(e[0]);
+return d>=from &&
+d<=to &&
+(!category || e[1].toLowerCase()===category);
+}).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function parkingFor(d){
+if(DATA.parking.days.includes(d.getDay())){
+return 'A las 07:59 debes pedir estacionamiento.';
+}
+return '';
+}
+
+function addParkingForRange(from,to,lines){
+const cur=new Date(from);
+
+while(cur<=to){
+const reminder=parkingFor(cur);
+
+if(reminder){
+lines.push(
+'<div class="date">Recordatorio · '+fmtDate(cur)+'</div>'+
+'🔔 '+reminder
+);
+}
+
+cur.setDate(cur.getDate()+1);
+}
+}
+
+
+/* ===== EVENTOS NUEVOS GUARDADOS POR VOZ =====
+   Se guardan en el navegador y NO requieren editar este archivo.
+*/
+const USER_EVENTS_KEY='natAgendaEventsV1';
+
+function getSavedEvents(){
+  try{return JSON.parse(localStorage.getItem(USER_EVENTS_KEY)||'[]');}
+  catch(e){return [];}
+}
+
+function saveEvent(date, person, text){
+  const arr=getSavedEvents();
+  arr.push({
+    id:Date.now()+Math.random(),
+    date,
+    person:person||'general',
+    text
+  });
+  localStorage.setItem(USER_EVENTS_KEY,JSON.stringify(arr));
+}
+
+function savedEventsForDates(from,to,person){
+  return getSavedEvents().filter(e=>{
+    const d=dateObj(e.date);
+    if(d<from || d>to)return false;
+    return !person || e.person===person;
+  }).map(e=>[e.date,e.person,e.text]);
+}
+
+function agendaEventsForDates(from,to,category){
+  let fixedCategory=category;
+  if(category==='josefina') fixedCategory='colegio';
+  if(category==='sala cuna') fixedCategory='sala cuna';
+
+  let fixed=eventsForDates(from,to,fixedCategory);
+
+  /* Para Josefina se agregan también sus eventos personales. */
+  if(category==='josefina'){
+    fixed=fixed.concat(savedEventsForDates(from,to,'josefina'));
+  }else if(category==='sala cuna'){
+    fixed=fixed.concat(savedEventsForDates(from,to,'luciana'));
+  }else if(category){
+    fixed=fixed.concat(savedEventsForDates(from,to,category));
+  }else{
+    fixed=fixed.concat(savedEventsForDates(from,to,'general'));
+  }
+
+  return fixed.sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function chileDateOffset(days){
+  const d=today();
+  d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+
+function parseNewSpokenEvent(text){
+  const raw=text.trim();
+  const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  /* No guardar preguntas como si fueran eventos. */
+  if(/^(que|qué|cual|cu[aá]l|tengo|hay|donde|d[oó]nde|cuando|cu[aá]ndo)\b/.test(s)
+     || /\?/.test(raw)) return null;
+
+  let person='general';
+  if(/\bjosefina\b/.test(s)) person='josefina';
+  else if(/\bluciana\b/.test(s)||/sala\s*cuna/.test(s)) person='luciana';
+
+  let offset=null;
+
+  if(/\bpasado\s+manana\b/.test(s)) offset=2;
+  else if(/\bmanana\b/.test(s)) offset=1;
+  else if(/\bhoy\b/.test(s)) offset=0;
+
+  if(offset===null){
+    const dias={domingo:0,lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6};
+    for(const nombre of Object.keys(dias)){
+      if(new RegExp('\\b'+nombre+'\\b').test(s)){
+        const d=today(), actual=d.getDay(), target=dias[nombre];
+        let diff=(target-actual+7)%7;
+        if(diff===0)diff=7;
+        offset=diff;
+        break;
+      }
+    }
+  }
+
+  /*
+     Fechas escritas:
+     "6 de septiembre", "6 septiembre", "6 de septiembre de 2026"
+     También acepta "6/9", "06-09" y "6/9/2026".
+  */
+  if(offset===null){
+    const months={
+      enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,
+      julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,
+      noviembre:11,diciembre:12
+    };
+    const monthPattern=Object.keys(months).join('|');
+
+    const named=s.match(new RegExp(
+      '\\b(\\d{1,2})\\s*(?:de\\s*)?(' + monthPattern + ')' +
+      '(?:\\s*(?:de\\s*)?(\\d{4}))?\\b'
+    ));
+
+    if(named){
+      const day=Number(named[1]);
+      const month=months[named[2]];
+      const year=named[3]?Number(named[3]):today().getFullYear();
+      const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+      let cleaned=raw
+        .replace(/^(agrega|agregame|anota|anotame|guarda|guardame|recuerda|recuerdame|suma|sumame|agenda|agendame)\s*/i,'')
+        .replace(/\bpara\s+(josefina|luciana)\b\s*/i,'')
+        .replace(/\b(josefina|luciana)\b\s*/i,'')
+        .replace(/\b\d{1,2}\s*(?:de\s*)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s*(?:de\s*)?\d{4})?\b/i,'')
+        .trim();
+
+      return {date,person,text:cleaned};
+    }
+
+    const dm=s.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?\b/);
+    if(dm){
+      const day=Number(dm[1]), month=Number(dm[2]);
+      const year=dm[3]?Number(dm[3]):today().getFullYear();
+      const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      let cleaned=raw.replace(/^(agrega|agregame|anota|anotame|guarda|guardame|recuerda|recuerdame|suma|sumame|agenda|agendame)\s*/i,'')
+        .replace(/\bpara\s+(josefina|luciana)\b\s*/i,'')
+        .replace(/\b(josefina|luciana)\b\s*/i,'')
+        .replace(/\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{4})?\b/i,'')
+        .trim();
+      return {date,person,text:cleaned};
+    }
+  }
+
+  if(offset===null)return null;
+
+  let cleaned=raw
+    .replace(/^(agrega|anota|guarda|recuerda)\s*/i,'')
+    .replace(/\bpara\s+(josefina|luciana)\b\s*/i,'')
+    .replace(/\b(josefina|luciana)\b\s*/i,'')
+    .replace(/\bpasado\s+mañana\b|\bpasado\s+manana\b|\bmañana\b|\bmanana\b|\bhoy\b/i,'')
+    .replace(/^\s*(debo|tengo que|hay que|necesito|debe|deben)\s+/i,'')
+    .trim();
+
+  return {date:chileDateOffset(offset),person,text:cleaned};
+}
+
+function tryAddSpokenEvent(transcript){
+  const s=transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  /* Comandos explícitos o frases declarativas como:
+     "mañana debo comprar sal..." */
+  const shouldSave=/^\s*(agrega|agregame|anota|anotame|guarda|guardame|recuerda|recuerdame|suma|sumame|agenda|agendame)\b/.test(s)
+    || /\b(debo|tengo\s+que|hay\s+que|necesito)\b/.test(s);
+
+  if(!shouldSave)return false;
+
+  const item=parseNewSpokenEvent(transcript);
+  if(!item || !item.text)return false;
+
+  saveEvent(item.date,item.person,item.text);
+
+  const who=item.person==='josefina'?'Josefina':
+             item.person==='luciana'?'Luciana':'para ti';
+  const dt=dateObj(item.date);
+  const day=fmtDate(dt);
+
+  const box=document.getElementById('answer');
+  box.style.display='block';
+  box.innerHTML='<div><b>Guardado:</b> '+who+' — '+day+'</div><div>• '+item.text+'</div>';
+
+  speak('Listo. Guardé '+item.text+' para '+who+' el '+day+'.');
+  return true;
+}
+
+
+function buildAnswer(q){
+
+const s=q.toLowerCase()
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g,'');
+
+const d=today();
+let from;
+let to;
+let label='hoy';
+let category=null;
+
+const dias={
+ domingo:0,
+ lunes:1,
+ martes:2,
+ miercoles:3,
+ jueves:4,
+ viernes:5,
+ sabado:6
+};
+
+/*
+   IMPORTANTE:
+   Primero revisamos si la pregunta contiene un día de la semana.
+   Así "mañana jueves" no queda atrapado por "mañana" y,
+   además, "jueves" siempre significa el próximo jueves si hoy
+   también es jueves (salvo que la persona diga explícitamente "hoy").
+*/
+let diaEncontrado=null;
+for(const nombre of Object.keys(dias)){
+  if(s.includes(nombre)){
+    diaEncontrado=nombre;
+    break;
+  }
+}
+
+if(/proxima semana|siguiente semana/.test(s)){
+
+  /* Próxima semana = lunes a domingo de la semana siguiente */
+  const day=d.getDay();
+  const daysUntilNextMonday=(8-day)%7 || 7;
+
+  from=new Date(d);
+  from.setDate(d.getDate()+daysUntilNextMonday);
+
+  to=new Date(from);
+  to.setDate(from.getDate()+6);
+
+  label='la próxima semana';
+
+}else if(/esta semana/.test(s)){
+
+  /* Semana actual = lunes a domingo */
+  const daysFromMonday=(d.getDay()+6)%7;
+
+  from=new Date(d);
+  from.setDate(d.getDate()-daysFromMonday);
+
+  to=new Date(from);
+  to.setDate(from.getDate()+6);
+
+  label='esta semana';
+
+}else if(diaEncontrado){
+
+  const objetivo=dias[diaEncontrado];
+  const actual=d.getDay();
+  let diferencia=(objetivo-actual+7)%7;
+
+  /* "jueves" significa el próximo jueves, no hoy */
+  if(diferencia===0 && !/hoy/.test(s)) diferencia=7;
+
+  from=new Date(d);
+  from.setDate(d.getDate()+diferencia);
+
+  to=new Date(from);
+  label=(diferencia===0 ? 'hoy' : diaEncontrado);
+
+}else if(/pasado\s+manana/.test(s)){
+
+from=new Date(d);
+from.setDate(d.getDate()+2);
+
+to=new Date(from);
+label='pasado mañana';
+
+}else if(/\bmanana\b/.test(s)){
+
+from=new Date(d);
+from.setDate(d.getDate()+1);
+
+to=new Date(from);
+label='mañana';
+
+}else if(/\bhoy\b/.test(s)){
+
+  from=new Date(d);
+  to=new Date(d);
+  label='hoy';
+
+}else{
+
+  from=new Date(d);
+  to=new Date(d);
+  label='hoy';
+
+}
+
+if(/josefina/.test(s)) category='josefina';
+else if(/luciana/.test(s)) category='sala cuna';
+else if(/colegio/.test(s)) category='colegio';
+else if(/sala cuna|guarderia|jardin/.test(s)) category='sala cuna';
+
+let ev=agendaEventsForDates(from,to,category);
+const lines=[];
+
+if(ev.length){
+
+  let last='';
+
+  ev.forEach(e=>{
+
+    if(e[0]!==last){
+      lines.push(
+        '<div class="date">'+
+        fmtDate(dateObj(e[0]))+
+        '</div>'
+      );
+      last=e[0];
+    }
+
+    lines.push('• '+e[2]);
+
+  });
+
+}else{
+
+  const persona = (category==='colegio' || category==='josefina') ? 'Josefina' : category==='sala cuna' ? 'Luciana' : '';
+
+  lines.push(
+    persona
+      ? 'Para '+persona+' no tienes actividades registradas para '+label+'.'
+      : 'No tienes actividades registradas para '+label+'.'
+  );
+
+}
+
+/* Estacionamiento: funciona tanto para un día como para un rango. */
+if(!category){
+  addParkingForRange(from,to,lines);
+}
+
+const answerPrefix = category==='colegio' || category==='josefina'
+  ? 'Para Josefina tienes'
+  : category==='sala cuna'
+    ? 'Para Luciana tienes'
+    : 'Para '+label+' tienes';
+
+return{
+  text:answerPrefix+': '+
+  lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),
+  html:'<div><b>'+answerPrefix+':</b></div>'+lines.join('<br>')
+};
+
+}
+function askNatalia(){
+
+const q=document.getElementById('question').value.trim();
+
+if(!q)return;
+
+/* Si el usuario escribió el recordatorio o la voz quedó en el cuadro,
+   el botón Preguntar también debe guardarlo. */
+if(tryAddSpokenEvent(q)){
+  render();
+  document.getElementById('question').value='';
+  return;
+}
+
+const a=buildAnswer(q);
+const box=document.getElementById('answer');
+
+box.style.display='block';
+box.innerHTML=a.html;
+
+speak(a.text);
+}
+
+let recognition=null;
+
+function startListening(){
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+if(!SR){
+alert('El reconocimiento de voz no está disponible en este navegador. Puedes escribir la pregunta.');
+return;
+}
+
+if(recognition){
+recognition.stop();
+return;
+}
+
+recognition=new SR();
+recognition.lang='es-CL';
+recognition.interimResults=false;
+recognition.maxAlternatives=1;
+
+const mic=document.getElementById('mic');
+mic.classList.add('listening');
+
+recognition.onresult=e=>{
+const transcript=e.results[0][0].transcript;
+document.getElementById('question').value=transcript;
+
+if(!tryAddSpokenEvent(transcript)){
+  askNatalia();
+}else{
+  render();
+  document.getElementById('question').value='';
+}
+};
+
+recognition.onerror=()=>{};
+
+recognition.onend=()=>{
+mic.classList.remove('listening');
+recognition=null;
+};
+
+recognition.start();
+}
+
+function eventsHtml(arr){
+
+return arr.map(x=>
+'<div class="item">'+
+'<div class="date">'+
+fmtDate(dateObj(x[0]))+
+'</div>'+
+x[2]+
+'</div>'
+).join('');
+
+}
+
+function list(){
+
+return JSON.parse(
+localStorage.getItem('natShopping') ||
+JSON.stringify(DATA.shopping)
+);
+
+}
+
+
+let calendarDate = new Date();
+calendarDate.setDate(1);
+let selectedCalendarDate = null;
+
+function allAgendaEvents(){
+  const saved=getSavedEvents().map(e=>[
+    e.date,
+    e.person==='josefina' ? 'Colegio' : 'Sala cuna',
+    e.text
+  ]);
+  return allFixedEvents().concat(saved).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function calendarKey(y,m,d){
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function renderCalendar(){
+  const title=document.getElementById('calendarTitle');
+  const grid=document.getElementById('calendarGrid');
+  const eventsBox=document.getElementById('calendarEvents');
+  if(!title || !grid || !eventsBox)return;
+
+  const y=calendarDate.getFullYear();
+  const m=calendarDate.getMonth();
+  const monthName=calendarDate.toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  title.textContent=monthName.charAt(0).toUpperCase()+monthName.slice(1);
+
+  const heads=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  grid.innerHTML=heads.map(h=>`<div class="calendar-head">${h}</div>`).join('');
+
+  const first=new Date(y,m,1);
+  const start=(first.getDay()+6)%7;
+  const days=new Date(y,m+1,0).getDate();
+  const prevDays=new Date(y,m,0).getDate();
+  const now=today();
+  const todayKey=calendarKey(now.getFullYear(),now.getMonth(),now.getDate());
+
+  const events=allAgendaEvents();
+  const byDate={};
+  events.forEach(e=>{
+    (byDate[e[0]] ||= []).push(e);
+  });
+
+  for(let i=0;i<42;i++){
+    const n=i-start+1;
+    let day=n, mm=m, yy=y, muted=false;
+    if(n<1){ day=prevDays+n; mm=m-1; muted=true; }
+    else if(n>days){ day=n-days; mm=m+1; muted=true; }
+    const d=new Date(yy,mm,day);
+    const key=calendarKey(d.getFullYear(),d.getMonth(),d.getDate());
+    const dayEvents=byDate[key]||[];
+    const isToday=key===todayKey;
+    const isSelected=key===selectedCalendarDate;
+
+    grid.innerHTML += `
+      <div class="calendar-day ${muted?'muted ':''}${isToday?'today ':''}${isSelected?'selected':''}"
+           onclick="selectCalendarDate('${key}')">
+        <div class="num">${day}</div>
+        ${dayEvents.slice(0,2).map(e=>`<span class="dot">• ${e[2]}</span>`).join('')}
+        ${dayEvents.length>2?`<span class="dot">+${dayEvents.length-2} más</span>`:''}
+      </div>`;
+  }
+
+  if(selectedCalendarDate){
+    const selected=events.filter(e=>e[0]===selectedCalendarDate);
+    if(selected.length){
+      eventsBox.innerHTML=
+        `<div class="date">${fmtDate(dateObj(selectedCalendarDate))}</div>`+
+        selected.map(e=>`<div class="item">• <b>${e[1]}</b>: ${e[2]}</div>`).join('');
+    }else{
+      eventsBox.innerHTML='<div class="small">No tienes actividades registradas para este día.</div>';
+    }
+  }else{
+    const monthEvents=events.filter(e=>{
+      const d=dateObj(e[0]);
+      return d.getFullYear()===y && d.getMonth()===m;
+    });
+    eventsBox.innerHTML=
+      `<div class="date">Actividades de ${monthName}</div>`+
+      (monthEvents.length
+        ? monthEvents.map(e=>`<div class="item">${fmtDate(dateObj(e[0]))} — <b>${e[1]}</b>: ${e[2]}</div>`).join('')
+        : '<div class="small">No hay actividades registradas este mes.</div>');
+  }
+}
+
+function selectCalendarDate(key){
+  selectedCalendarDate=key;
+  const d=dateObj(key);
+  calendarDate=new Date(d.getFullYear(),d.getMonth(),1);
+  renderCalendar();
+}
+
+function changeCalendarMonth(delta){
+  calendarDate.setMonth(calendarDate.getMonth()+delta);
+  selectedCalendarDate=null;
+  renderCalendar();
+}
+
+const CALENDAR_API_URL='https://natalia-woad.vercel.app/api/analizar-calendario';
+
+async function uploadCalendar(){
+  const input=document.getElementById('calendarFile');
+  const status=document.getElementById('uploadStatus');
+  const person=document.getElementById('uploadPerson').value;
+  const file=input.files && input.files[0];
+  if(!file)return;
+
+  status.className='status ok';
+  status.textContent='⏳ Analizando '+file.name+'…';
+
+  try{
+    if(file.size>12*1024*1024) throw new Error('El archivo es muy grande. Usa un PDF o imagen de hasta 12 MB.');
+    const reader=new FileReader();
+    const data=await new Promise((resolve,reject)=>{
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=()=>reject(new Error('No se pudo leer el archivo.'));
+      reader.readAsDataURL(file);
+    });
+
+    const res=await fetch(CALENDAR_API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data,mimeType:file.type||'application/octet-stream',person})
+    });
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(out.error||('La API respondió con error '+res.status+'.'));
+    const events=Array.isArray(out.events)?out.events:[];
+    if(!events.length) throw new Error('No encontré fechas claras en el archivo.');
+    saveImportedEvents(events);
+    render();
+    status.textContent='✅ Listo. Se agregaron '+events.length+' actividades al calendario.';
+    input.value='';
+  }catch(err){
+    status.className='status error';
+    if(err instanceof TypeError) status.textContent='❌ No se pudo conectar con la API de Vercel. Verifica que el despliegue de la API esté activo y permita solicitudes desde GitHub Pages.';
+    else status.textContent='❌ '+err.message;
+  }
+}
+
+function render(){
+
+const saved=getSavedEvents();
+const savedJosefina=saved.filter(e=>e.person==='josefina').map(e=>[e.date,'Colegio',e.text]);
+const savedLuciana=saved.filter(e=>e.person==='luciana').map(e=>[e.date,'Sala cuna',e.text]);
+
+document.getElementById('school').innerHTML=
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Colegio'||e[1]==='Josefina').concat(savedJosefina));
+
+document.getElementById('schoolHome').innerHTML=
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Colegio'||e[1]==='Josefina').concat(savedJosefina));
+
+document.getElementById('nursery').innerHTML=
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
+
+document.getElementById('nurseryHome').innerHTML=
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
+
+document.getElementById('routine').innerHTML=
+DATA.nursery_daily
+.concat(DATA.nursery_clothing,DATA.nursery_medications)
+.map(x=>'<div class="item">• '+x+'</div>')
+.join('');
+
+document.getElementById('shopping').innerHTML=
+list().map((x,i)=>
+'<div class="item"><label>'+
+'<input type="checkbox" onchange="del('+i+')"> '+
+x+
+'</label></div>'
+).join('');
+
+renderCalendar();
+}
+
+function addItem(){
+
+const i=document.getElementById('newItem');
+const v=i.value.trim();
+
+if(!v)return;
+
+const l=list();
+l.push(v);
+
+localStorage.setItem(
+'natShopping',
+JSON.stringify(l)
+);
+
+i.value='';
+render();
+}
+
+function del(i){
+
+const l=list();
+
+l.splice(i,1);
+
+localStorage.setItem(
+'natShopping',
+JSON.stringify(l)
+);
+
+render();
+}
+
+document.getElementById('question')
+.addEventListener('keydown',e=>{
+if(e.key==='Enter')askNatalia();
+});
+
+render();
+
+/*
+  IMPORTANTE:
+  Quitamos el registro del Service Worker de esta versión para evitar
+  que una copia antigua de la página quede guardada y vuelva a aparecer.
+  No necesitas sw.js para que funcionen las preguntas, botones ni voz.
+*/
+if('serviceWorker' in navigator){
+navigator.serviceWorker.getRegistrations()
+.then(registrations=>{
+registrations.forEach(reg=>reg.unregister());
+})
+.catch(()=>{});
+}
+</script>
+
+<div style="font-size:12px;opacity:.65;text-align:center;margin:8px 0 14px">
+También puedes decir: “Mañana debo comprar sal, aceite y arroz”.
+</div>
+</body>
+</html>
