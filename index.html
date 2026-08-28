@@ -84,21 +84,24 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <section id="calendario">
 <div class="card">
 <h2>📅 Agregar un calendario</h2>
-<p class="small">Elige a tu hija y sube el calendario. Natalia prepara el contenido y ChatGPT lo convierte en actividades.</p>
+<p class="small">Elige a tu hija y sube una foto o PDF. Natalia lo lee y ChatGPT ayuda a ordenarlo por fecha.</p>
 <div class="uploadBox">
 <div class="uploadRow"><select id="uploadPerson" class="personSelect"><option value="josefina">Josefina — Colegio</option><option value="luciana">Luciana — Sala cuna</option></select>
 <label for="calendarFile" class="fileLabel">📎 Elegir foto o PDF</label><input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()"></div>
 <div id="uploadStatus" class="status"></div>
 <div id="chatBox" class="chatBox hidden">
-<h3 style="margin-top:0">🤖 Falta solo un paso</h3>
-<div class="step"><div class="stepnum">1</div><div>Envía el texto a <b>ChatGPT</b>.</div></div>
-<div class="step"><div class="stepnum">2</div><div>ChatGPT lo ordena y te entrega el resultado.</div></div>
-<div class="step"><div class="stepnum">3</div><div>Pega el resultado aquí y Natalia lo agrega al calendario.</div></div>
-<button class="action full" onclick="sendToChatGPT()">🤖 Enviar a ChatGPT</button>
-<button class="action full" onclick="copyPrompt()">📋 Copiar texto</button>
-<textarea id="chatResult" placeholder="Pega aquí la respuesta de ChatGPT…"></textarea>
+<h3 style="margin-top:0">🤖 Natalia + ChatGPT</h3>
+<p class="small">Natalia ya leyó tu calendario. Ahora ChatGPT lo ordenará por fecha.</p>
+<button class="action full" onclick="sendToChatGPT()">✨ Pasar a ChatGPT</button>
+<div id="chatInstructions" class="tip hidden">
+<b>Cuando ChatGPT termine:</b><br>
+1. Copia su respuesta.<br>
+2. Vuelve a Natalia.<br>
+3. Pégala aquí y toca <b>Agregar al calendario</b>.
+</div>
+<textarea id="chatResult" placeholder="Pega aquí la respuesta de ChatGPT…" aria-label="Respuesta de ChatGPT"></textarea>
 <button class="action full" onclick="importChatGPTResult()">✅ Agregar al calendario</button>
-<div class="tip">💡 No necesitas configurar una API ni pagar saldo de OpenAI para usar esta versión.</div>
+<div class="tip">💡 No necesitas configurar una API ni pagar saldo de OpenAI.</div>
 </div>
 </div></div>
 <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><button class="action" onclick="changeCalendarMonth(-1)" style="margin-top:0">‹</button><h2 id="calendarTitle" style="margin:0;text-align:center"></h2><button class="action" onclick="changeCalendarMonth(1)" style="margin-top:0">›</button></div><div id="calendarGrid"></div><div id="calendarEvents" style="margin-top:14px"></div></div>
@@ -553,28 +556,24 @@ return result.data.text||'';
 function buildChatPrompt(){
 const persona=extractedPerson==='josefina'?'Josefina — Colegio':'Luciana — Sala cuna';
 
-return `Necesito que analices el calendario de ${persona} que aparece en el texto siguiente.
+return `Quiero que ordenes este calendario de ${persona} para una aplicación llamada Natalia.
 
-Busca TODAS las actividades, fechas, celebraciones, cumpleaños, materiales que haya que llevar, reuniones, cambios de horario, días especiales, retiros y cualquier información importante.
+IMPORTANTE:
+- Busca TODAS las actividades, fechas, celebraciones, cumpleaños, materiales que haya que llevar, reuniones, cambios de horario, días especiales, retiros y cualquier información importante.
+- No inventes información.
+- Separa cada actividad por fecha.
+- Usa el año que aparezca en el calendario. Si no aparece, usa 2026.
+- Conserva horarios y materiales importantes.
+- Devuelve SOLO las líneas de actividades, sin explicaciones, sin títulos y sin código.
 
-Devuelve ÚNICAMENTE un JSON válido con este formato:
+Usa EXACTAMENTE este formato, una actividad por línea:
+YYYY-MM-DD | descripción de la actividad
 
-[
-  {
-    "date": "YYYY-MM-DD",
-    "text": "Descripción clara de la actividad"
-  }
-]
+Ejemplo:
+2026-09-04 | Comprar comida
+2026-09-06 | 🎂 Cumpleaños de Josefina
 
-REGLAS:
-1. No inventes información.
-2. Separa cada actividad en un elemento.
-3. Usa el año que aparezca en el calendario.
-4. Si el calendario no indica el año, utiliza 2026.
-5. Conserva horarios y materiales importantes.
-6. No escribas explicaciones fuera del JSON.
-
-TEXTO EXTRAÍDO DEL CALENDARIO:
+TEXTO DEL CALENDARIO:
 ${extractedCalendarText}`;
 }
 
@@ -599,16 +598,35 @@ alert('✅ Copiado. Ahora abre ChatGPT y pega el contenido.');
 }
 
 async function sendToChatGPT(){
-  if(!extractedCalendarText){ alert('Primero sube y lee un calendario.'); return; }
-  const prompt=buildChatPrompt();
-  try{
-    if(navigator.share){
-      await navigator.share({title:'Calendario de Natalia',text:prompt});
-      return;
-    }
-  }catch(e){ if(e && e.name==='AbortError') return; }
-  await copyPrompt();
-  window.open('https://chatgpt.com/','_blank');
+if(!extractedCalendarText){ alert('Primero sube y lee un calendario.'); return; }
+
+const prompt=buildChatPrompt();
+const instructions=document.getElementById('chatInstructions');
+if(instructions)instructions.classList.remove('hidden');
+
+try{
+if(navigator.share){
+await navigator.share({title:'Calendario de Natalia',text:prompt});
+return;
+}
+}catch(e){
+if(e && e.name==='AbortError')return;
+}
+
+try{
+await navigator.clipboard.writeText(prompt);
+alert('✅ Texto copiado. Abre ChatGPT, pégalo y envíalo.');
+window.open('https://chatgpt.com/','_blank');
+}catch(e){
+const area=document.createElement('textarea');
+area.value=prompt;
+document.body.appendChild(area);
+area.select();
+document.execCommand('copy');
+area.remove();
+alert('✅ Texto copiado. Abre ChatGPT, pégalo y envíalo.');
+window.open('https://chatgpt.com/','_blank');
+}
 }
 
 function openChatGPT(){ sendToChatGPT(); }
@@ -621,37 +639,41 @@ return;
 }
 
 try{
-let cleaned=raw.replace(/```json/gi,'').replace(/```/g,'').trim();
-
-/* Permite que ChatGPT haya puesto alguna frase antes/después */
-const start=cleaned.indexOf('[');
-const end=cleaned.lastIndexOf(']');
-if(start>=0&&end>start)cleaned=cleaned.slice(start,end+1);
-
-const parsed=JSON.parse(cleaned);
-if(!Array.isArray(parsed))throw new Error('La respuesta no es una lista.');
-
 const category=extractedPerson==='josefina'?'Colegio':'Sala cuna';
+let events=[];
 
-const events=parsed
+/* Formato sencillo: YYYY-MM-DD | actividad */
+raw.split(/\r?\n/).forEach(line=>{
+const clean=line.replace(/^[-•*]\s*/,'').trim();
+const m=clean.match(/^(\d{4}-\d{2}-\d{2})\s*\|\s*(.+)$/);
+if(m&&m[2].trim())events.push([m[1],category,m[2].trim()]);
+});
+
+/* Compatibilidad con respuestas JSON antiguas */
+if(!events.length){
+let cleaned=raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+const a=cleaned.indexOf('['),b=cleaned.lastIndexOf(']');
+if(a>=0&&b>a)cleaned=cleaned.slice(a,b+1);
+const parsed=JSON.parse(cleaned);
+if(!Array.isArray(parsed))throw new Error('Formato no reconocido.');
+events=parsed
 .filter(e=>e&&typeof e.date==='string'&&typeof e.text==='string')
 .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e.date))
 .map(e=>[e.date,category,e.text.trim()])
 .filter(e=>e[2]);
+}
 
-if(!events.length)throw new Error('No encontré actividades válidas en el JSON.');
+if(!events.length)throw new Error('No encontré actividades con fecha.');
 
 saveImportedEvents(events);
 render();
 renderCalendar();
-
 document.getElementById('chatResult').value='';
 document.getElementById('chatBox').classList.add('hidden');
 setUploadStatus('🎉 Listo. Se agregaron '+events.length+' actividades de '+(extractedPerson==='josefina'?'Josefina':'Luciana')+' a Natalia.');
-
 alert('✅ Calendario agregado a Natalia.');
 }catch(err){
-alert('❌ No pude leer la respuesta. Asegúrate de copiar el JSON completo que te dio ChatGPT.');
+alert('❌ No pude leer la respuesta. Copia las líneas que te entregue ChatGPT y pégalas aquí.');
 console.error(err);
 }
 }
