@@ -111,25 +111,35 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <script>
 const DATA={
 appName:'Natalia',
+
 parking:{
 days:[4,5],
 time:'07:59',
 important:true,
 message:'Natalia, son las 7:59. Recuerda pedir estacionamiento.'
 },
-shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],
+
 nursery_daily:[
 'Cepillo dental + gel dentífrico',
 'Bolsa para ropa sucia',
 '7 pañales diarios',
 'Babero lavable con mangas'
 ],
-nursery_clothing:['2 o 3 mudas completas según clima'],
-nursery_medications:['Antipirético SOS','Termómetro','Crema para coceduras']
+
+nursery_clothing:[
+'2 o 3 mudas completas según clima'
+],
+
+nursery_medications:[
+'Antipirético SOS',
+'Termómetro',
+'Crema para coceduras'
+]
 };
 
-const IMPORTED_EVENTS_KEY='natImportedEventsV1';
-const USER_EVENTS_KEY='natAgendaEventsV1';
+const IMPORTED_EVENTS_KEY='natImportedEventsV2';
+const USER_EVENTS_KEY='natAgendaEventsV2';
+const SHOPPING_KEY='natShoppingV2';
 
 function tab(id,b){
 document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));
@@ -384,7 +394,11 @@ return arr.sort((a,b)=>a[0].localeCompare(b[0])).map(x=>'<div class="item"><div 
 }
 
 function list(){
-return JSON.parse(localStorage.getItem('natShopping')||JSON.stringify(DATA.shopping));
+try{
+return JSON.parse(localStorage.getItem(SHOPPING_KEY)||'[]');
+}catch(e){
+return [];
+}
 }
 
 let calendarDate=new Date();calendarDate.setDate(1);
