@@ -46,6 +46,14 @@ input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}
 .calendar-day.selected{background:#f2effd}
 .calendar-day .num{font-weight:800;font-size:13px}
 .calendar-day .dot{display:block;margin-top:5px;font-size:10px;line-height:1.15;overflow:hidden;white-space:nowrap}
+.uploadBox{border:2px dashed #d8d0ef;border-radius:16px;padding:14px;background:#faf9ff;margin-top:12px}
+.uploadRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fileInput{display:none}
+.fileLabel{display:inline-block;border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;color:#fff;font-weight:800;cursor:pointer}
+.personSelect{border:1px solid #ddd8ea;border-radius:13px;padding:11px;background:#fff;font-size:15px;flex:1;min-width:180px}
+.status{margin-top:10px;padding:10px;border-radius:12px;background:#f2effd;display:none}
+.status.ok{display:block}
+.status.error{display:block;background:#fff0f3;color:#a51f3d}
 </style>
 </head>
 <body>
@@ -121,6 +129,21 @@ input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}
 </section>
 
 <section id="calendario">
+<div class="card">
+  <h2>📎 Subir calendario</h2>
+  <p class="small">Sube el PDF o una foto del calendario y Natalia intentará reconocer automáticamente las fechas y actividades.</p>
+  <div class="uploadBox">
+    <div class="uploadRow">
+      <select id="uploadPerson" class="personSelect">
+        <option value="josefina">Josefina — Colegio</option>
+        <option value="luciana">Luciana — Sala cuna</option>
+      </select>
+      <label for="calendarFile" class="fileLabel">📎 Elegir archivo</label>
+      <input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()">
+    </div>
+    <div id="uploadStatus" class="status"></div>
+  </div>
+</div>
 <div class="card">
   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
     <button class="action" onclick="changeCalendarMonth(-1)" style="margin-top:0">‹</button>
@@ -247,8 +270,33 @@ const day=Number(parts.find(x=>x.type==='day').value);
 return new Date(y,m-1,day,12,0,0,0);
 }
 
+const IMPORTED_EVENTS_KEY='natImportedEventsV1';
+
+function getImportedEvents(){
+  try{return JSON.parse(localStorage.getItem(IMPORTED_EVENTS_KEY)||'[]');}
+  catch(e){return [];}
+}
+
+function saveImportedEvents(events){
+  const current=getImportedEvents();
+  const merged=current.concat(events||[]);
+  const seen=new Set();
+  const clean=merged.filter(e=>{
+    if(!Array.isArray(e)||e.length<3)return false;
+    const k=e[0]+'|'+e[1]+'|'+e[2];
+    if(seen.has(k))return false;
+    seen.add(k);
+    return true;
+  });
+  localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(clean));
+}
+
+function allFixedEvents(){
+  return DATA.events.concat(getImportedEvents());
+}
+
 function eventsForDates(from,to,category){
-return DATA.events.filter(e=>{
+return allFixedEvents().filter(e=>{
 const d=dateObj(e[0]);
 return d>=from &&
 d<=to &&
@@ -726,7 +774,7 @@ function allAgendaEvents(){
     e.person==='josefina' ? 'Colegio' : 'Sala cuna',
     e.text
   ]);
-  return DATA.events.concat(saved).sort((a,b)=>a[0].localeCompare(b[0]));
+  return allFixedEvents().concat(saved).sort((a,b)=>a[0].localeCompare(b[0]));
 }
 
 function calendarKey(y,m,d){
@@ -751,7 +799,8 @@ function renderCalendar(){
   const start=(first.getDay()+6)%7;
   const days=new Date(y,m+1,0).getDate();
   const prevDays=new Date(y,m,0).getDate();
-  const todayKey=keyDate(new Date().getFullYear(),new Date().getMonth(),new Date().getDate());
+  const now=new Date();
+  const todayKey=calendarKey(now.getFullYear(),now.getMonth(),now.getDate());
 
   const events=allAgendaEvents();
   const byDate={};
@@ -814,6 +863,44 @@ function changeCalendarMonth(delta){
   renderCalendar();
 }
 
+async function uploadCalendar(){
+  const input=document.getElementById('calendarFile');
+  const status=document.getElementById('uploadStatus');
+  const person=document.getElementById('uploadPerson').value;
+  const file=input.files && input.files[0];
+  if(!file)return;
+
+  status.className='status ok';
+  status.textContent='⏳ Analizando '+file.name+'…';
+
+  try{
+    if(file.size>12*1024*1024) throw new Error('El archivo es muy grande. Usa un PDF o imagen de hasta 12 MB.');
+    const reader=new FileReader();
+    const data=await new Promise((resolve,reject)=>{
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=()=>reject(new Error('No se pudo leer el archivo.'));
+      reader.readAsDataURL(file);
+    });
+
+    const res=await fetch('/api/analizar-calendario',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data,mimeType:file.type||'application/octet-stream',person})
+    });
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(out.error||'No se pudo analizar el calendario.');
+    const events=Array.isArray(out.events)?out.events:[];
+    if(!events.length) throw new Error('No encontré fechas claras en el archivo.');
+    saveImportedEvents(events);
+    render();
+    status.textContent='✅ Listo. Se agregaron '+events.length+' actividades al calendario.';
+    input.value='';
+  }catch(err){
+    status.className='status error';
+    status.textContent='❌ '+err.message;
+  }
+}
+
 function render(){
 
 const saved=getSavedEvents();
@@ -821,16 +908,16 @@ const savedJosefina=saved.filter(e=>e.person==='josefina').map(e=>[e.date,'Coleg
 const savedLuciana=saved.filter(e=>e.person==='luciana').map(e=>[e.date,'Sala cuna',e.text]);
 
 document.getElementById('school').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Colegio').concat(savedJosefina));
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Colegio'||e[1]==='Josefina').concat(savedJosefina));
 
 document.getElementById('schoolHome').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Colegio').concat(savedJosefina));
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Colegio'||e[1]==='Josefina').concat(savedJosefina));
 
 document.getElementById('nursery').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
 
 document.getElementById('nurseryHome').innerHTML=
-eventsHtml(DATA.events.filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
+eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
 
 document.getElementById('routine').innerHTML=
 DATA.nursery_daily
