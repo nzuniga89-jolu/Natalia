@@ -7,6 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Natalia</title>
+<link rel="icon" type="image/jpeg" href="foto-natalia.jpg">
+<link rel="apple-touch-icon" href="foto-natalia.jpg">
 
 <!-- Librerías gratuitas: funcionan desde GitHub Pages -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
@@ -16,8 +18,8 @@
 *{box-sizing:border-box}
 :root{--purple:#6d5ce7;--purple2:#8d72f2;--bg:#f7f5fc;--text:#292536;--muted:#77718a;--soft:#efecfb}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;padding:28px 20px 24px;border-radius:0 0 30px 30px}
-.header-inner{max-width:760px;margin:auto}h1{margin:0;font-size:32px;line-height:1.1}header p{margin:6px 0 0;font-size:16px;opacity:.92}
+header{background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;padding:22px 20px 20px;border-radius:0 0 30px 30px}
+.header-inner{max-width:760px;margin:auto;display:flex;align-items:center;gap:14px}.profile-photo{width:58px;height:58px;border-radius:50%;object-fit:cover;object-position:center 35%;border:3px solid rgba(255,255,255,.9);box-shadow:0 5px 18px #24154d35;flex:none}.header-title h1{margin:0;font-size:32px;line-height:1.1}header p{margin:6px 0 0;font-size:16px;opacity:.92}
 main{max-width:760px;margin:auto;padding:14px 14px 100px}
 nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0}
 nav button{border:0;border-radius:14px;padding:10px 5px;background:#e9e5f8;color:#51467d;font-weight:800;font-size:12px;white-space:nowrap}nav button.active{background:var(--purple);color:#fff}
@@ -26,7 +28,7 @@ section{display:none}.activeSection{display:block}
 .hero{background:linear-gradient(180deg,#fff,#faf9ff);text-align:center;padding:22px 18px}.hero h2{margin:0 0 6px;font-size:23px}.hero p{margin:0;color:var(--muted)}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.quick button{border:0;border-radius:17px;background:var(--soft);padding:16px 10px;color:#4f447a;font-weight:850;font-size:15px}.quick button span{display:block;font-size:26px;margin-bottom:5px}
 .item{padding:12px 0;border-bottom:1px solid #eee;line-height:1.4}.item:last-child{border:0}.date{font-size:12px;text-transform:uppercase;color:var(--purple);font-weight:900}.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#ffe7ed;color:#a51f3d;font-size:12px;font-weight:900}
-button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--purple);color:#fff;font-weight:850;margin-top:8px;font-size:14px}.full{width:100%}
+button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--purple);color:#fff;font-weight:850;margin-top:8px;font-size:14px}.deleteBtn{border:0;border-radius:11px;padding:8px 10px;background:#fff0f3;color:#a51f3d;font-weight:900;font-size:12px;cursor:pointer;flex:none}.eventRow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.eventText{flex:1;min-width:0}.full{width:100%}
 .ask{margin:10px 0}.askbox{display:flex;gap:8px;align-items:center}.askbox input{flex:1;min-width:0}.mic{width:50px;height:50px;border:0;border-radius:15px;background:var(--purple);color:#fff;font-size:22px}.mic.listening{background:#c43d69;animation:pulse 1s infinite}@keyframes pulse{50%{transform:scale(1.05)}}
 .answer{margin-top:12px;background:#f2effd;border-radius:16px;padding:14px;line-height:1.45}.answer b{color:#5d4bc0}.small{color:var(--muted);font-size:13px}
 .add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}textarea{width:100%;min-height:140px;border:1px solid #ddd8ea;border-radius:13px;padding:12px;font:inherit;resize:vertical}
@@ -44,7 +46,7 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 </head>
 
 <body>
-<header><div class="header-inner"><h1>💜 Natalia</h1><p>Tu asistente personal</p></div></header>
+<header><div class="header-inner"><img class="profile-photo" src="foto-natalia.jpg" alt="Natalia"><div class="header-title"><h1>Natalia</h1><p>Tu asistente personal</p></div></div></header>
 <main>
 <nav>
 <button class="active" onclick="tab('hoy',this)">Inicio</button>
@@ -79,7 +81,7 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 
 <section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button></div></div></section>
 
-<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><div class="item"><span class="badge">JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b></div><p class="small">También puedes decir: “mañana debo comprar pan” o “6 de septiembre cumpleaños de Josefina”.</p></div></section>
+<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><div class="item"><span class="badge">JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
 
 <section id="calendario">
 <div class="card">
@@ -111,35 +113,52 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <script>
 const DATA={
 appName:'Natalia',
-
 parking:{
 days:[4,5],
 time:'07:59',
 important:true,
 message:'Natalia, son las 7:59. Recuerda pedir estacionamiento.'
 },
-
+shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],
+events:[
+['2026-08-03','Colegio','Inicio evaluaciones estandarizadas de Inglés Tradicional y evaluaciones externas orales.'],
+['2026-08-05','Colegio','Simulacro de refugio.'],
+['2026-08-10','Colegio','Inicio Sociograma 2 BraveUP!.'],
+['2026-08-15','Colegio','Feriado — Asunción de la Virgen.'],
+['2026-08-17','Colegio','Término Sociograma 2 BraveUP! y Digital Citizenship Week.'],
+['2026-08-20','Colegio','Ensayo PAES DEMRE IV medio.'],
+['2026-08-21','Colegio','Ensayo PAES DEMRE IV medio y Green Day: polera o accesorio verde.'],
+['2026-08-24','Colegio','Semana de Evaluación Unidad 3, Lenguaje y Matemática 1° Básico a II Medio. Semana de las Ciencias.'],
+['2026-08-28','Colegio','Jeans Day CAMPUR general de estudiantes.'],
+['2026-08-10','Sala cuna','Traer un objeto tecnológico desde el hogar, dentro de un estuche.'],
+['2026-08-12','Sala cuna','Camión de juguete tamaño mediano con nombre para jugar con arena.'],
+['2026-08-13','Sala cuna','Cumpleaños de Constancio N°2.'],
+['2026-08-14','Sala cuna','Día de la familia — horario a confirmar.'],
+['2026-08-18','Sala cuna','Fruta picada para receta, en recipiente pequeño con tapa y nombre.'],
+['2026-08-21','Sala cuna','Venir desde el hogar con vestimenta en blanco y negro.'],
+['2026-08-25','Sala cuna','1 espejo mediano con nombre.'],
+['2026-08-26','Sala cuna','Día de la técnico en párvulos — enviar colación para compartir a las 15:30.'],
+['2026-08-28','Sala cuna','Reunión técnica — retiro a las 15:30.'],
+['2026-09-02','Josefina','🎂 Cumpleaños de Josefina.'],
+['2026-09-05','Josefina','💃 Baile de Josefina a las 11:30 — debe estar en el colegio.'],
+['2026-09-05','Josefina','🏫 A las 09:00 hay que estar en el stand del colegio para vender.'],
+['2026-09-01','Sala cuna','Ropa para ensuciar + 1 reciclado de material reciclable por cada niño.'],
+['2026-09-03','Sala cuna','1 botella plástica de 1 litro.'],
+['2026-09-04','Sala cuna','Baile sala cuna — jardín cerrado.'],
+['2026-09-25','Sala cuna','Carrito de Primavera: traer tu mejor outfit acorde a la primavera — desfile.']
+],
 nursery_daily:[
 'Cepillo dental + gel dentífrico',
 'Bolsa para ropa sucia',
 '7 pañales diarios',
 'Babero lavable con mangas'
 ],
-
-nursery_clothing:[
-'2 o 3 mudas completas según clima'
-],
-
-nursery_medications:[
-'Antipirético SOS',
-'Termómetro',
-'Crema para coceduras'
-]
+nursery_clothing:['2 o 3 mudas completas según clima'],
+nursery_medications:['Antipirético SOS','Termómetro','Crema para coceduras']
 };
 
-const IMPORTED_EVENTS_KEY='natImportedEventsV2';
-const USER_EVENTS_KEY='natAgendaEventsV2';
-const SHOPPING_KEY='natShoppingV2';
+const IMPORTED_EVENTS_KEY='natImportedEventsV1';
+const USER_EVENTS_KEY='natAgendaEventsV1';
 
 function tab(id,b){
 document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));
@@ -191,9 +210,8 @@ seen.add(k);return true;
 });
 localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(clean));
 }
-function allFixedEvents(){
-return getImportedEvents();
-}
+
+function allFixedEvents(){return DATA.events.concat(getImportedEvents());}
 
 function eventsForDates(from,to,category){
 return allFixedEvents().filter(e=>{
@@ -303,6 +321,74 @@ let cleaned=raw.replace(/^(agrega|anota|guarda|recuerda)\s*/i,'')
 return {date:chileDateOffset(offset),person,text:cleaned};
 }
 
+function parseSpokenDeleteTarget(text){
+  const raw=text.trim();
+  const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  let person=null;
+  if(/\bjosefina\b/.test(s)||/\bcolegio\b/.test(s))person='josefina';
+  else if(/\bluciana\b/.test(s)||/sala\s*cuna/.test(s))person='luciana';
+
+  let date=null;
+  const base=today();
+  if(/\bpasado\s+manana\b/.test(s)){base.setDate(base.getDate()+2);date=keyDate(base);}
+  else if(/\bmanana\b/.test(s)){base.setDate(base.getDate()+1);date=keyDate(base);}
+  else if(/\bhoy\b/.test(s)){date=keyDate(base);}
+  else{
+    const days={domingo:0,lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6};
+    for(const n of Object.keys(days)){
+      if(new RegExp('\\b'+n+'\\b').test(s)){
+        const actual=base.getDay(),target=days[n];let diff=(target-actual+7)%7;if(diff===0)diff=7;
+        base.setDate(base.getDate()+diff);date=keyDate(base);break;
+      }
+    }
+  }
+  if(!date){
+    const months={enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+    const mp=Object.keys(months).join('|');
+    const m=s.match(new RegExp('\\b(\\d{1,2})\\s*(?:de\\s*)?('+mp+')(?:\\s*(?:de\\s*)?(\\d{4}))?\\b'));
+    if(m){const y=m[3]?Number(m[3]):today().getFullYear();date=`${y}-${String(months[m[2]]).padStart(2,'0')}-${String(Number(m[1])).padStart(2,'0')}`;}
+  }
+
+  let terms=s.replace(/^(borra|borrar|elimina|eliminar|quita|quitar|saca|sacar|borra el|elimina el|quita el)\s*/,'')
+    .replace(/\b(josefina|luciana|colegio|sala\s*cuna)\b/g,'')
+    .replace(/\bpasado\s+manana\b|\bmanana\b|\bhoy\b/g,'')
+    .replace(/\b(domingo|lunes|martes|miercoles|jueves|viernes|sabado)\b/g,'')
+    .replace(/\b\d{1,2}\s*(?:de\s*)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s*(?:de\s*)?\d{4})?\b/g,'')
+    .replace(/\b(?:actividad|evento|aviso|recordatorio)\b/g,'')
+    .replace(/\s+/g,' ').trim();
+  return {date,person,terms};
+}
+
+function tryDeleteSpokenEvent(transcript){
+  const s=transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(!/^\s*(borra|borrar|elimina|eliminar|quita|quitar|saca|sacar)\b/.test(s))return false;
+  const target=parseSpokenDeleteTarget(transcript);
+  if(!target.date){
+    speak('Dime la fecha. Por ejemplo: borra la actividad de mañana de Josefina.');
+    return true;
+  }
+
+  const all=allAgendaEvents();
+  const matches=all.filter(e=>{
+    if(e[0]!==target.date)return false;
+    if(target.person==='josefina' && !['Colegio','Josefina'].includes(e[1]))return false;
+    if(target.person==='luciana' && e[1]!=='Sala cuna')return false;
+    if(target.terms && target.terms.length && !e[2].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(target.terms))return false;
+    return true;
+  });
+  if(!matches.length){
+    const who=target.person==='josefina'?' de Josefina':target.person==='luciana'?' de Luciana':'';
+    const box=document.getElementById('answer');box.style.display='block';box.innerHTML='<b>No encontré una actividad para borrar</b> '+fmtDate(dateObj(target.date))+who+'.';
+    speak('No encontré una actividad para borrar ese día.');
+    return true;
+  }
+  matches.forEach(e=>removeAgendaEvent(e[0],e[1],e[2]));
+  const who=target.person==='josefina'?' de Josefina':target.person==='luciana'?' de Luciana':'';
+  const box=document.getElementById('answer');box.style.display='block';box.innerHTML='<b>Borrado:</b> '+matches.map(e=>'• '+escapeHtml(e[2])).join('<br>');
+  speak('Listo. Borré '+matches.length+' actividad'+(matches.length===1?'':'es')+' del '+fmtDate(dateObj(target.date))+who+'.');
+  return true;
+}
+
 function tryAddSpokenEvent(transcript){
 const s=transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const shouldSave=/^\s*(agrega|agregame|anota|anotame|guarda|guardame|recuerda|recuerdame|suma|sumame|agenda|agendame)\b/.test(s)||/\b(debo|tengo\s+que|hay\s+que|necesito)\b/.test(s);
@@ -367,6 +453,7 @@ return{text:answerPrefix+': '+lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),h
 
 function askNatalia(){
 const q=document.getElementById('question').value.trim();if(!q)return;
+if(tryDeleteSpokenEvent(q)){render();document.getElementById('question').value='';return;}
 if(tryAddSpokenEvent(q)){render();document.getElementById('question').value='';return;}
 const a=buildAnswer(q),box=document.getElementById('answer');
 box.style.display='block';box.innerHTML=a.html;speak(a.text);
@@ -382,30 +469,52 @@ const mic=document.getElementById('mic');mic.classList.add('listening');
 recognition.onresult=e=>{
 const transcript=e.results[0][0].transcript;
 document.getElementById('question').value=transcript;
-if(!tryAddSpokenEvent(transcript))askNatalia();else{render();document.getElementById('question').value='';}
+if(tryDeleteSpokenEvent(transcript)){render();document.getElementById('question').value='';}
+else if(!tryAddSpokenEvent(transcript))askNatalia();else{render();document.getElementById('question').value='';}
 };
 recognition.onerror=()=>{};
 recognition.onend=()=>{mic.classList.remove('listening');recognition=null;};
 recognition.start();
 }
 
+function escapeHtml(v){
+return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+}
+
+function removeAgendaEvent(date,category,text){
+  const imported=getImportedEvents().filter(e=>!(e[0]===date && e[1]===category && e[2]===text));
+  localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(imported));
+
+  let person=null;
+  if(category==='Colegio'||category==='Josefina') person='josefina';
+  else if(category==='Sala cuna'||category==='Luciana') person='luciana';
+  else if(category==='general') person='general';
+
+  const saved=getSavedEvents().filter(e=>!(e.date===date && (!person||e.person===person) && e.text===text));
+  localStorage.setItem(USER_EVENTS_KEY,JSON.stringify(saved));
+  selectedCalendarDate=date;
+  render();
+}
+
 function eventsHtml(arr){
-return arr.sort((a,b)=>a[0].localeCompare(b[0])).map(x=>'<div class="item"><div class="date">'+fmtDate(dateObj(x[0]))+'</div>'+x[2]+'</div>').join('');
+return arr.sort((a,b)=>a[0].localeCompare(b[0])).map(x=>`<div class="item"><div class="date">${fmtDate(dateObj(x[0]))}</div><div class="eventRow"><div class="eventText">${escapeHtml(x[2])}</div><button class="deleteBtn" onclick='removeAgendaEvent(${JSON.stringify(x[0])},${JSON.stringify(x[1])},${JSON.stringify(x[2])})'>🗑️ Borrar</button></div></div>`).join('');
 }
 
 function list(){
 try{
-return JSON.parse(localStorage.getItem(SHOPPING_KEY)||'[]');
-}catch(e){
-return [];
-}
+  const v2=localStorage.getItem(SHOPPING_KEY);
+  if(v2)return JSON.parse(v2);
+  const old=localStorage.getItem('natShopping');
+  if(old){localStorage.setItem(SHOPPING_KEY,old);return JSON.parse(old);}
+  return [];
+}catch(e){return [];}
 }
 
 let calendarDate=new Date();calendarDate.setDate(1);
 let selectedCalendarDate=null;
 
 function allAgendaEvents(){
-const saved=getSavedEvents().map(e=>[e.date,e.person==='josefina'?'Colegio':'Sala cuna',e.text]);
+const saved=getSavedEvents().map(e=>[e.date,e.person==='josefina'?'Colegio':e.person==='luciana'?'Sala cuna':'general',e.text]);
 return allFixedEvents().concat(saved).sort((a,b)=>a[0].localeCompare(b[0]));
 }
 
@@ -434,7 +543,7 @@ grid.innerHTML+=`<div class="calendar-day ${muted?'muted ':''}${isToday?'today '
 }
 if(selectedCalendarDate){
 const selected=events.filter(e=>e[0]===selectedCalendarDate);
-eventsBox.innerHTML=selected.length?`<div class="date">${fmtDate(dateObj(selectedCalendarDate))}</div>`+selected.map(e=>`<div class="item">• <b>${e[1]}</b>: ${e[2]}</div>`).join(''):'<div class="small">No tienes actividades registradas para este día.</div>';
+eventsBox.innerHTML=selected.length?`<div class="date">${fmtDate(dateObj(selectedCalendarDate))}</div>`+selected.map(e=>`<div class="item"><div class="eventRow"><div class="eventText">• <b>${escapeHtml(e[1])}</b>: ${escapeHtml(e[2])}</div><button class="deleteBtn" onclick='removeAgendaEvent(${JSON.stringify(e[0])},${JSON.stringify(e[1])},${JSON.stringify(e[2])})'>🗑️ Borrar</button></div></div>`).join(''):'<div class="small">No tienes actividades registradas para este día.</div>';
 }else{
 const monthEvents=events.filter(e=>{const dd=dateObj(e[0]);return dd.getFullYear()===y&&dd.getMonth()===m;});
 eventsBox.innerHTML=`<div class="date">Actividades de ${monthName}</div>`+(monthEvents.length?monthEvents.map(e=>`<div class="item">${fmtDate(dateObj(e[0]))} — <b>${e[1]}</b>: ${e[2]}</div>`).join(''):'<div class="small">No hay actividades registradas este mes.</div>');
@@ -733,13 +842,13 @@ function addItem(){
 const i=document.getElementById('newItem'),v=i.value.trim();
 if(!v)return;
 const l=list();l.push(v);
-localStorage.setItem('natShopping',JSON.stringify(l));
+localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));
 i.value='';render();
 }
 
 function del(i){
 const l=list();l.splice(i,1);
-localStorage.setItem('natShopping',JSON.stringify(l));
+localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));
 render();
 }
 
