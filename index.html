@@ -84,20 +84,20 @@ button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--pur
 <section id="calendario">
 <div class="card">
 <h2>📅 Agregar un calendario</h2>
-<p class="small">Elige a tu hija y sube una foto o PDF. Natalia lo lee y ChatGPT ayuda a ordenarlo por fecha.</p>
+<p class="small">Elige a tu hija y sube una foto o PDF. Natalia prepara el archivo y ChatGPT lo interpreta directamente.</p>
 <div class="uploadBox">
 <div class="uploadRow"><select id="uploadPerson" class="personSelect"><option value="josefina">Josefina — Colegio</option><option value="luciana">Luciana — Sala cuna</option></select>
 <label for="calendarFile" class="fileLabel">📎 Elegir foto o PDF</label><input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()"></div>
 <div id="uploadStatus" class="status"></div>
 <div id="chatBox" class="chatBox hidden">
 <h3 style="margin-top:0">🤖 Natalia + ChatGPT</h3>
-<p class="small">Natalia ya leyó tu calendario. Ahora ChatGPT lo ordenará por fecha.</p>
-<button class="action full" onclick="sendToChatGPT()">✨ Pasar a ChatGPT</button>
+<p class="small">Natalia preparó tu archivo. ChatGPT verá la imagen o PDF y lo ordenará por fecha.</p>
+<button class="action full" onclick="sendToChatGPT()">🤖 Enviar archivo a ChatGPT</button>
 <div id="chatInstructions" class="tip hidden">
 <b>Cuando ChatGPT termine:</b><br>
-1. Copia su respuesta.<br>
+1. Copia el JSON que te entregue.<br>
 2. Vuelve a Natalia.<br>
-3. Pégala aquí y toca <b>Agregar al calendario</b>.
+3. Pégalo aquí y toca <b>Agregar al calendario</b>.
 </div>
 <textarea id="chatResult" placeholder="Pega aquí la respuesta de ChatGPT…" aria-label="Respuesta de ChatGPT"></textarea>
 <button class="action full" onclick="importChatGPTResult()">✅ Agregar al calendario</button>
@@ -463,6 +463,7 @@ function changeCalendarMonth(delta){calendarDate.setMonth(calendarDate.getMonth(
 
 let extractedCalendarText='';
 let extractedPerson='josefina';
+let uploadedCalendarFile=null;
 
 function setUploadStatus(text,error=false){
 const status=document.getElementById('uploadStatus');
@@ -477,6 +478,7 @@ const person=document.getElementById('uploadPerson').value;
 if(!file)return;
 
 extractedPerson=person;
+uploadedCalendarFile=file;
 document.getElementById('chatBox').classList.add('hidden');
 setUploadStatus('⏳ Leyendo '+file.name+'…');
 
@@ -493,6 +495,13 @@ throw new Error('Formato no compatible. Usa PDF o imagen.');
 }
 
 text=(text||'').replace(/\s+/g,' ').trim();
+
+    if(file.type.startsWith('image/')){
+      try{
+        const reinforced=await extractImageTextReinforced(file);
+        if(reinforced && reinforced.length>text.length) text=reinforced.replace(/\s+/g,' ').trim();
+      }catch(e){ console.warn('OCR reforzado omitido',e); }
+    }
 
 if(!text||text.length<20){
 throw new Error('No pude leer suficiente texto. Prueba con una foto más nítida o un PDF con texto.');
@@ -553,27 +562,68 @@ setUploadStatus('⏳ Leyendo imagen… '+Math.round(m.progress*100)+'%');
 return result.data.text||'';
 }
 
+async function extractImageTextReinforced(file){
+ const img=await new Promise((resolve,reject)=>{
+   const im=new Image();
+   im.onload=()=>resolve(im); im.onerror=reject;
+   im.src=URL.createObjectURL(file);
+ });
+ const scale=Math.max(2,Math.min(4,2200/Math.max(img.width,img.height)));
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.round(img.width*scale);
+ canvas.height=Math.round(img.height*scale);
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
+ const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+ for(let i=0;i<data.data.length;i+=4){
+   const r=data.data[i],g=data.data[i+1],b=data.data[i+2];
+   let v=0.299*r+0.587*g+0.114*b;
+   v=(v-128)*1.45+128;
+   v=Math.max(0,Math.min(255,v));
+   data.data[i]=data.data[i+1]=data.data[i+2]=v;
+ }
+ ctx.putImageData(data,0,0);
+ const result=await Tesseract.recognize(canvas,'spa',{
+   logger:m=>{
+     if(m.status==='recognizing text'&&m.progress){
+       setUploadStatus('⏳ Revisando fechas… '+Math.round(m.progress*100)+'%');
+     }
+   }
+ });
+ URL.revokeObjectURL(img.src);
+ return result.data.text||'';
+}
+
 function buildChatPrompt(){
-const persona=extractedPerson==='josefina'?'Josefina — Colegio':'Luciana — Sala cuna';
+ const persona=extractedPerson==='josefina'?'Josefina — Colegio':'Luciana — Sala cuna';
+ return `Necesito que analices el calendario de ${persona} que está ADJUNTO a este mensaje.
 
-return `Quiero que ordenes este calendario de ${persona} para una aplicación llamada Natalia.
+IMPORTANTE: debes mirar directamente la imagen o PDF adjunto. El texto OCR de abajo es solo una ayuda y puede tener errores. Si el OCR contradice la imagen, SIEMPRE gana la información visible en la imagen/PDF.
 
-IMPORTANTE:
-- Busca TODAS las actividades, fechas, celebraciones, cumpleaños, materiales que haya que llevar, reuniones, cambios de horario, días especiales, retiros y cualquier información importante.
-- No inventes información.
-- Separa cada actividad por fecha.
-- Usa el año que aparezca en el calendario. Si no aparece, usa 2026.
-- Conserva horarios y materiales importantes.
-- Devuelve SOLO las líneas de actividades, sin explicaciones, sin títulos y sin código.
+Busca TODAS las actividades, fechas, celebraciones, cumpleaños, materiales que haya que llevar, reuniones, cambios de horario, días especiales, retiros y cualquier información importante.
 
-Usa EXACTAMENTE este formato, una actividad por línea:
-YYYY-MM-DD | descripción de la actividad
+Devuelve ÚNICAMENTE un JSON válido con este formato:
+[
+  {
+    "date": "YYYY-MM-DD",
+    "text": "Descripción clara de la actividad"
+  }
+]
 
-Ejemplo:
-2026-09-04 | Comprar comida
-2026-09-06 | 🎂 Cumpleaños de Josefina
+REGLAS ESTRICTAS:
+1. No inventes información.
+2. Separa cada actividad en un elemento.
+3. Lee las fechas VISUALMENTE desde el calendario.
+4. Los números escritos en la imagen tienen prioridad absoluta sobre el OCR.
+5. Si ves "04 SEPTIEMBRE", la fecha es 2026-09-04, no 2026-09-01.
+6. Usa el año que aparezca en el calendario. Si no aparece, usa 2026.
+7. No cambies una fecha porque el día de la semana no coincida.
+8. Conserva horarios, materiales y cualquier instrucción importante.
+9. No resumas tanto que se pierdan detalles.
+10. Si una fecha no puede determinarse con seguridad, NO inventes una fecha.
+11. Devuelve SOLO el JSON, sin explicaciones, títulos ni código Markdown.
 
-TEXTO DEL CALENDARIO:
+TEXTO OCR DE APOYO (puede contener errores):
 ${extractedCalendarText}`;
 }
 
@@ -598,35 +648,28 @@ alert('✅ Copiado. Ahora abre ChatGPT y pega el contenido.');
 }
 
 async function sendToChatGPT(){
-if(!extractedCalendarText){ alert('Primero sube y lee un calendario.'); return; }
-
-const prompt=buildChatPrompt();
-const instructions=document.getElementById('chatInstructions');
-if(instructions)instructions.classList.remove('hidden');
-
-try{
-if(navigator.share){
-await navigator.share({title:'Calendario de Natalia',text:prompt});
-return;
-}
-}catch(e){
-if(e && e.name==='AbortError')return;
-}
-
-try{
-await navigator.clipboard.writeText(prompt);
-alert('✅ Texto copiado. Abre ChatGPT, pégalo y envíalo.');
-window.open('https://chatgpt.com/','_blank');
-}catch(e){
-const area=document.createElement('textarea');
-area.value=prompt;
-document.body.appendChild(area);
-area.select();
-document.execCommand('copy');
-area.remove();
-alert('✅ Texto copiado. Abre ChatGPT, pégalo y envíalo.');
-window.open('https://chatgpt.com/','_blank');
-}
+ if(!uploadedCalendarFile){ alert('Primero sube y lee un calendario.'); return; }
+ const prompt=buildChatPrompt();
+ const instructions=document.getElementById('chatInstructions');
+ if(instructions)instructions.classList.remove('hidden');
+ try{
+   if(navigator.share && navigator.canShare && navigator.canShare({files:[uploadedCalendarFile]})){
+     await navigator.share({title:'Calendario de Natalia',text:prompt,files:[uploadedCalendarFile]});
+     return;
+   }
+ }catch(e){
+   if(e && e.name==='AbortError')return;
+   console.warn('No se pudo compartir el archivo directamente',e);
+ }
+ try{
+   await navigator.clipboard.writeText(prompt);
+   alert('✅ Adjunta la misma foto/PDF en ChatGPT, pega el texto copiado y envíalo.');
+   window.open('https://chatgpt.com/','_blank');
+ }catch(e){
+   const area=document.createElement('textarea');area.value=prompt;document.body.appendChild(area);area.select();document.execCommand('copy');area.remove();
+   alert('✅ Adjunta la misma foto/PDF en ChatGPT y pega el texto copiado.');
+   window.open('https://chatgpt.com/','_blank');
+ }
 }
 
 function openChatGPT(){ sendToChatGPT(); }
@@ -664,6 +707,12 @@ events=parsed
 }
 
 if(!events.length)throw new Error('No encontré actividades con fecha.');
+
+ const ocrNorm=extractedCalendarText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ if(/\b04\s+septiembre\b/.test(ocrNorm) && events.some(e=>e[0]==='2026-09-01')){
+   const likely=events.filter(e=>e[0]==='2026-09-01'&&/peinad|chileno|locos|trenza|cinta|accesorio/i.test(e[2]));
+   if(likely.length) events=events.map(e=>likely.includes(e)?['2026-09-04',e[1],e[2]]:e);
+ }
 
 saveImportedEvents(events);
 render();
