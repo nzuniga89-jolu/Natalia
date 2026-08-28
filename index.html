@@ -39,13 +39,13 @@ button.action{border:0;border-radius:13px;padding:11px 14px;background:#6d5ce7;c
 input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}
 .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border:0;border-radius:50%;background:#6d5ce7;color:white;font-size:24px;box-shadow:0 8px 25px #33236a40}
 
-.calendar-head{font-size:11px;text-align:center;font-weight:800;color:#777;padding:4px 0;min-width:0}.calendar-day,.calendar-head{min-width:0}.calendar-day{overflow:hidden}
+.calendar-head{font-size:11px;text-align:center;font-weight:800;color:#777;padding:4px 0}
 .calendar-day{min-height:54px;border:1px solid #eee8f7;border-radius:10px;padding:6px;background:white;cursor:pointer}
 .calendar-day.muted{opacity:.38}
 .calendar-day.today{outline:2px solid #6d5ce7}
 .calendar-day.selected{background:#f2effd}
 .calendar-day .num{font-weight:800;font-size:13px}
-.calendar-day .dot{display:block;margin-top:5px;font-size:10px;line-height:1.15;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
+.calendar-day .dot{display:block;margin-top:5px;font-size:10px;line-height:1.15;overflow:hidden;white-space:nowrap}
 .uploadBox{border:2px dashed #d8d0ef;border-radius:16px;padding:14px;background:#faf9ff;margin-top:12px}
 .uploadRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .fileInput{display:none}
@@ -799,7 +799,7 @@ function renderCalendar(){
   const start=(first.getDay()+6)%7;
   const days=new Date(y,m+1,0).getDate();
   const prevDays=new Date(y,m,0).getDate();
-  const now=today();
+  const now=new Date();
   const todayKey=calendarKey(now.getFullYear(),now.getMonth(),now.getDate());
 
   const events=allAgendaEvents();
@@ -863,8 +863,6 @@ function changeCalendarMonth(delta){
   renderCalendar();
 }
 
-const CALENDAR_API_URL='https://natalia-woad.vercel.app/api/analizar-calendario';
-
 async function uploadCalendar(){
   const input=document.getElementById('calendarFile');
   const status=document.getElementById('uploadStatus');
@@ -884,13 +882,13 @@ async function uploadCalendar(){
       reader.readAsDataURL(file);
     });
 
-    const res=await fetch(CALENDAR_API_URL,{
+    const res=await fetch('https://natalia-woad.vercel.app/api/analizar-calendario',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({data,mimeType:file.type||'application/octet-stream',person})
     });
     const out=await res.json().catch(()=>({}));
-    if(!res.ok) throw new Error(out.error||('La API respondió con error '+res.status+'.'));
+    if(!res.ok) throw new Error(out.error||'No se pudo analizar el calendario.');
     const events=Array.isArray(out.events)?out.events:[];
     if(!events.length) throw new Error('No encontré fechas claras en el archivo.');
     saveImportedEvents(events);
@@ -899,8 +897,7 @@ async function uploadCalendar(){
     input.value='';
   }catch(err){
     status.className='status error';
-    if(err instanceof TypeError) status.textContent='❌ No se pudo conectar con la API de Vercel. Verifica que el despliegue de la API esté activo y permita solicitudes desde GitHub Pages.';
-    else status.textContent='❌ '+err.message;
+    status.textContent='❌ '+(err instanceof TypeError ? 'No se pudo conectar con la API. Si aparece este mensaje, hay que habilitar CORS en Vercel para GitHub Pages.' : err.message);
   }
 }
 
