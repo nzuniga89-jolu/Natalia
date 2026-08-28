@@ -43,6 +43,7 @@ input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}
 <button onclick="tab('hijas',this)">Hijas</button>
 <button onclick="tab('compras',this)">Compras</button>
 <button onclick="tab('recordatorios',this)">Recordatorios</button>
+ <button onclick="tab('calendario',this)">📄 Calendario</button>
 </nav>
 
 <section id="hoy" class="activeSection">
@@ -71,7 +72,41 @@ Puedes preguntar “¿Qué tengo mañana?” o decir directamente:
 <div class="card"><h2>🎒 Colegio — agosto</h2><div id="schoolHome"></div></div>
 <div class="card"><h2>👶 Sala cuna — agosto</h2><div id="nurseryHome"></div></div>
 </section>
+<section id="calendario">
+<div class="card">
+<h2>📄 Actualizar calendario</h2>
 
+<p>
+Sube una foto o PDF del calendario del colegio o sala cuna.
+Natalia buscará las actividades y después agregará solamente las nuevas.
+</p>
+
+<div style="margin:15px 0">
+<label style="font-weight:800">¿De quién es este calendario?</label>
+
+<select id="calendarPerson"
+style="width:100%;margin-top:8px;border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px">
+<option value="josefina">👧 Josefina — Colegio</option>
+<option value="luciana">👶 Luciana — Sala cuna</option>
+</select>
+</div>
+
+<div style="margin:15px 0">
+<input
+type="file"
+id="calendarFile"
+accept=".pdf,image/*"
+style="width:100%;padding:12px;background:#f7f5fc;border-radius:13px">
+</div>
+
+<button class="action" onclick="analyzeCalendar()">
+🔍 Analizar calendario
+</button>
+
+<div id="calendarResult" class="answer" style="display:none"></div>
+</div>
+</section>
+ 
 <section id="hijas">
 <div class="card"><h2>🎒 Colegio</h2><div id="school"></div></div>
 <div class="card"><h2>👶 Sala cuna</h2><div id="nursery"></div></div>
@@ -362,6 +397,30 @@ function render(){
 }
 
 document.getElementById('question').addEventListener('keydown',e=>{if(e.key==='Enter')processInput()});
+ function analyzeCalendar(){
+
+ const fileInput=document.getElementById('calendarFile');
+ const person=document.getElementById('calendarPerson').value;
+ const result=document.getElementById('calendarResult');
+
+ if(!fileInput.files.length){
+   result.style.display='block';
+   result.innerHTML='⚠️ Primero selecciona un PDF o una foto del calendario.';
+   return;
+ }
+
+ const file=fileInput.files[0];
+
+ result.style.display='block';
+
+ result.innerHTML=
+   '<b>📄 Calendario recibido</b><br><br>'+
+   'Archivo: '+file.name+'<br>'+
+   'Para: '+(person==='josefina'?'Josefina 👧':'Luciana 👶')+
+   '<br><br>'+
+   '⏳ La lectura automática quedará conectada en el siguiente paso.';
+
+ }
 render();
 
 if('serviceWorker' in navigator){
