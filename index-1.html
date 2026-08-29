@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="es">
+<head>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<meta name="theme-color" content="#6d5ce7">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6d5ce7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Jolu</title>
+
+<!-- Librerías gratuitas: funcionan desde GitHub Pages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+window.addEventListener('load', async ()=>{
+  if('serviceWorker' in navigator){
+    try{
+      await navigator.serviceWorker.register('./sw.js', {scope:'./'});
+    }catch(e){ console.warn('Jolu: no se pudo registrar el service worker', e); }
+  }
+});
+</script>
+
+<style>
+*{box-sizing:border-box}
+:root{--purple:#6d5ce7;--purple2:#8d72f2;--bg:#f7f5fc;--text:#292536;--muted:#77718a;--soft:#efecfb}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;padding:22px 20px 20px;border-radius:0 0 30px 30px}
+.header-inner{max-width:760px;margin:auto;display:flex;align-items:center;gap:14px}.avatar-button{width:64px;height:64px;border:0;padding:0;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;flex:none;position:relative;box-shadow:0 5px 18px #24154d35}.profile-photo{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:center;border:3px solid rgba(255,255,255,.95);display:block}.avatar-placeholder{width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,.95);display:grid;place-items:center;font-size:28px;font-weight:900;color:#fff;background:rgba(255,255,255,.16)}.avatar-edit{position:absolute;right:-2px;bottom:-2px;width:24px;height:24px;border-radius:50%;background:#fff;color:var(--purple);display:grid;place-items:center;font-size:13px;border:2px solid rgba(255,255,255,.9)}.header-title h1{margin:0;font-size:32px;line-height:1.1}header p{margin:6px 0 0;font-size:16px;opacity:.92}.header-title h1{margin:0;font-size:32px;line-height:1.1}header p{margin:6px 0 0;font-size:16px;opacity:.92}
+main{max-width:760px;margin:auto;padding:14px 14px 100px}
+nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0}
+nav button{border:0;border-radius:14px;padding:10px 5px;background:#e9e5f8;color:#51467d;font-weight:800;font-size:12px;white-space:nowrap}nav button.active{background:var(--purple);color:#fff}
+section{display:none}.activeSection{display:block}
+.card{background:#fff;border-radius:22px;padding:18px;margin:11px 0;box-shadow:0 5px 18px #32245c12}
+.hero{background:linear-gradient(180deg,#fff,#faf9ff);text-align:center;padding:22px 18px}.hero h2{margin:0 0 6px;font-size:23px}.hero p{margin:0;color:var(--muted)}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.quick button{border:0;border-radius:17px;background:var(--soft);padding:16px 10px;color:#4f447a;font-weight:850;font-size:15px}.quick button span{display:block;font-size:26px;margin-bottom:5px}
+.item{padding:12px 0;border-bottom:1px solid #eee;line-height:1.4}.item:last-child{border:0}.date{font-size:12px;text-transform:uppercase;color:var(--purple);font-weight:900}.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#ffe7ed;color:#a51f3d;font-size:12px;font-weight:900}
+button.action{border:0;border-radius:14px;padding:12px 15px;background:var(--purple);color:#fff;font-weight:850;margin-top:8px;font-size:14px}.deleteBtn{border:0;border-radius:11px;padding:8px 10px;background:#fff0f3;color:#a51f3d;font-weight:900;font-size:12px;cursor:pointer;flex:none}.eventRow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.eventText{flex:1;min-width:0}.full{width:100%}
+.ask{margin:10px 0}.askbox{display:flex;gap:8px;align-items:center}.askbox input{flex:1;min-width:0}.mic{width:50px;height:50px;border:0;border-radius:15px;background:var(--purple);color:#fff;font-size:22px}.mic.listening{background:#c43d69;animation:pulse 1s infinite}@keyframes pulse{50%{transform:scale(1.05)}}
+.answer{margin-top:12px;background:#f2effd;border-radius:16px;padding:14px;line-height:1.45}.answer b{color:#5d4bc0}.small{color:var(--muted);font-size:13px}
+.add{display:flex;gap:8px;margin-top:10px}.add input{flex:1}input{border:1px solid #ddd8ea;border-radius:13px;padding:12px;font-size:15px}textarea{width:100%;min-height:140px;border:1px solid #ddd8ea;border-radius:13px;padding:12px;font:inherit;resize:vertical}
+.fab{position:fixed;right:18px;bottom:18px;width:62px;height:62px;border:0;border-radius:50%;background:var(--purple);color:#fff;font-size:25px;box-shadow:0 8px 25px #33236a40;z-index:20}
+#calendarGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:14px;width:100%;min-width:0}
+.calendar-head{font-size:11px;text-align:center;font-weight:800;color:#777;padding:4px 0;min-width:0}
+.calendar-day{min-width:0;min-height:60px;border:1px solid #eee8f7;border-radius:11px;padding:6px;background:#fff;cursor:pointer;overflow:hidden}
+.calendar-day.muted{opacity:.38}.calendar-day.today{outline:2px solid var(--purple)}.calendar-day.selected{background:#f2effd}
+.calendar-day .num{font-weight:800;font-size:13px}.calendar-day .dot{display:block;margin-top:5px;font-size:9px;line-height:1.15;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+@media(max-width:430px){#calendarGrid{gap:3px}.calendar-day{min-height:52px;padding:4px;border-radius:8px}.calendar-head{font-size:10px}.calendar-day .num{font-size:12px}.calendar-day .dot{font-size:8px;margin-top:3px}}
+.uploadBox{border:2px dashed #d8d0ef;border-radius:18px;padding:15px;background:#faf9ff;margin-top:12px}.uploadRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fileInput{display:none}.fileLabel{display:block;text-align:center;border:0;border-radius:14px;padding:13px 14px;background:var(--purple);color:#fff;font-weight:850;cursor:pointer;flex:1}.personSelect{border:1px solid #ddd8ea;border-radius:13px;padding:12px;background:#fff;font-size:15px;flex:1;min-width:180px}.status{margin-top:10px;padding:11px;border-radius:12px;background:#f2effd;display:none;line-height:1.4}.status.ok{display:block}.status.error{display:block;background:#fff0f3;color:#a51f3d}.chatBox{margin-top:12px;padding:15px;border-radius:18px;background:#f2effd}.hidden{display:none}
+.weatherCard{background:linear-gradient(135deg,#f4f1ff,#fff);border:1px solid #e7e1fb}.weatherMain{display:flex;align-items:center;gap:12px}.weatherIcon{font-size:42px}.weatherTemp{font-size:30px;font-weight:900}.weatherDetails{color:var(--muted);font-size:14px}.notifyRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.notifyRow .action{margin-top:0}.success{color:#247a4b;font-weight:800}.settings-button{margin-left:auto;width:48px;height:48px;border:0;border-radius:16px;background:rgba(255,255,255,.18);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 5px 18px #24154d25}.settings-button:active{transform:scale(.96)}.settings-overlay{position:fixed!important;left:0!important;top:0!important;right:0!important;bottom:0!important;width:100vw!important;height:100vh!important;background:rgba(32,25,55,.55);backdrop-filter:blur(5px);display:none!important;align-items:center;justify-content:center;z-index:99999!important;padding:16px;overflow:hidden}.settings-overlay.open{display:flex!important}.settings-panel{position:relative;width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:28px;padding:20px 18px 30px;box-shadow:0 15px 50px #21174150}.settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.settings-head h2{margin:0}.close-settings{border:0;width:42px;height:42px;border-radius:14px;background:#efecfb;color:#51467d;font-size:22px;font-weight:900}.settings-section{background:#faf9ff;border:1px solid #eee9fa;border-radius:18px;padding:15px;margin-top:12px}.settings-section h3{margin:0 0 5px}.settings-actions{display:flex;gap:8px;flex-wrap:wrap}.avatar-settings{display:flex;align-items:center;gap:14px}.avatar-preview{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#efecfb;display:grid;place-items:center;font-size:30px;font-weight:900;color:var(--purple);flex:none}.avatar-preview img{width:100%;height:100%;object-fit:cover}.dangerBtn{border:0;border-radius:14px;padding:12px 15px;background:#fff0f3;color:#a51f3d;font-weight:850;margin-top:8px;font-size:14px}.settings-input{width:100%;margin-top:8px}
+.voiceRow{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.voiceRow select{flex:1;min-width:180px;border:1px solid #ddd8ea;border-radius:13px;padding:12px;background:#fff;font-size:14px}.voiceRow input[type="range"]{flex:1;min-width:140px;accent-color:var(--purple)}.voiceValue{min-width:42px;text-align:right;font-weight:800;color:var(--purple)}
+.step{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.stepnum{min-width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;display:grid;place-items:center;font-weight:900}.tip{background:#fff8df;border-radius:14px;padding:12px;margin-top:12px;font-size:13px}
+@media(max-width:430px){nav button{font-size:11px;padding:9px 3px}.quick{grid-template-columns:1fr 1fr}.card{padding:16px}}
+
+/* ===== JOLU · HOME PREMIUM ===== */
+:root{--purple:#6654df;--purple2:#8c73ee;--deep:#33265c;--bg:#f6f3fc;--soft:#eeebfa;--text:#292536;--muted:#77718a;--gold:#d9a56d}
+body{background:linear-gradient(180deg,#f7f5fc 0%,#f3f0fa 100%)}
+header{background:linear-gradient(135deg,#5140bd 0%,#715be2 55%,#9277ee 100%);padding:18px 16px 20px;border-radius:0 0 30px 30px;box-shadow:0 10px 28px rgba(48,34,105,.18)}
+.header-title h1{font-size:31px;letter-spacing:-.7px;font-weight:900}.header-title p{font-size:14px;opacity:.9}
+.settings-button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px)}
+nav{margin:12px 0 14px;padding:5px;border-radius:18px;background:rgba(255,255,255,.78);box-shadow:0 5px 18px rgba(50,38,92,.08);backdrop-filter:blur(10px)}
+nav button{border-radius:14px;padding:11px 5px;background:transparent;color:#625886;font-size:12px;transition:.18s ease}
+nav button.active{background:linear-gradient(135deg,#6654df,#806be9);box-shadow:0 5px 14px rgba(102,84,223,.25)}
+.card{border:1px solid rgba(102,84,223,.07);box-shadow:0 8px 26px rgba(49,38,92,.08)}
+.hero{position:relative;overflow:hidden;text-align:left;padding:25px 20px 20px;background:radial-gradient(circle at 90% 0%,rgba(140,115,238,.17),transparent 34%),linear-gradient(145deg,#fff 0%,#fbfaff 100%)}
+.hero:after{content:"";position:absolute;width:150px;height:150px;right:-75px;top:-75px;border:1px solid rgba(217,165,109,.28);border-radius:50%}
+.jolu-home-brand{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.jolu-home-brand img{width:54px;height:54px;border-radius:16px;object-fit:cover;box-shadow:0 7px 18px rgba(64,45,130,.18)}
+.jolu-home-brand .eyebrow{margin:0;color:#8a79ad;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase}
+.hero h2{font-size:27px;letter-spacing:-.7px;margin:0 0 5px}.hero p{font-size:15px;line-height:1.45}
+.quick{gap:11px;margin-top:18px}.quick button{min-height:108px;border:1px solid rgba(102,84,223,.06);background:linear-gradient(145deg,#f2effc,#ece8fa);border-radius:20px;padding:17px 12px;color:#4d4178;font-size:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8);transition:transform .16s ease,box-shadow .16s ease}
+.quick button:active{transform:scale(.98);box-shadow:0 3px 10px rgba(70,55,130,.10)}.quick button span{font-size:29px;margin-bottom:9px}
+.weatherCard{background:linear-gradient(145deg,#fff,#faf9ff);padding:20px}.weatherCard h2{font-size:21px}.ask{background:linear-gradient(145deg,#fff,#f9f7ff)}.ask h2{font-size:21px}
+@media(max-width:430px){.hero{padding:22px 17px 18px}.hero h2{font-size:25px}.quick button{min-height:103px}nav button{font-size:11px}}
+
+</style>
+</head>
+
+<body>
+<header><div class="header-inner"><button class="avatar-button" onclick="changeAvatar()" aria-label="Cambiar foto de perfil"><div id="avatarBox" class="avatar-placeholder">N</div><span class="avatar-edit">✎</span></button><div class="header-title"><h1>Jolu</h1><p>Tu asistente personal</p></div><button class="settings-button" onclick="openSettings()" aria-label="Abrir configuraciones">⚙️</button></div></header><input id="avatarFile" type="file" accept="image/*" style="display:none" onchange="saveAvatar(this.files[0])">
+<div id="settingsOverlay" class="settings-overlay" onclick="closeSettings(event)"><div class="settings-panel" onclick="event.stopPropagation()">
+<div class="settings-head"><h2>⚙️ Configuraciones</h2><button class="close-settings" onclick="closeSettings()">×</button></div><p class="small">Personaliza a Jolu sin tocar el código.</p>
+<div class="settings-section"><h3>👤 Avatar</h3><p class="small">Tu foto se guarda en este teléfono.</p><div class="avatar-settings"><div id="settingsAvatarPreview" class="avatar-preview">N</div><div class="settings-actions"><button class="action" onclick="changeAvatar()">📷 Cambiar foto</button><button class="dangerBtn" onclick="removeAvatar()">🗑️ Quitar foto</button></div></div></div>
+<div class="settings-section"><h3>🗣️ Voz de Jolu</h3><p class="small">Elige la voz, velocidad y tono.</p><div class="voiceRow"><select id="voiceSelect" aria-label="Voz de Jolu"></select></div><div class="voiceRow"><span class="small">Velocidad</span><input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="0.95" oninput="updateVoiceLabel()"><span id="voiceRateValue" class="voiceValue">0.95</span></div><div class="voiceRow"><span class="small">Tono</span><input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" oninput="updateVoiceLabel()"><span id="voicePitchValue" class="voiceValue">1.00</span></div><button class="action" onclick="saveVoiceSettings()">💾 Guardar voz</button> <button class="action" onclick="testSelectedVoice()">🔊 Probar</button><span id="voiceStatus" class="small" style="margin-left:8px"></span></div>
+
+<div class="settings-section"><h3>🔔 Avisos importantes</h3><p class="small">Permite las notificaciones para que Jolu pueda avisarte.</p><button class="action" onclick="enableNotifications()">🔔 Activar avisos</button><span id="notifyStatus" class="small" style="margin-left:8px"></span></div>
+</div></div>
+<main>
+<nav>
+<button class="active" onclick="tab('hoy',this)">Inicio</button>
+<button onclick="tab('hijas',this)">Hijas</button>
+<button onclick="tab('compras',this)">Compras</button>
+<button onclick="tab('recordatorios',this)">Avisos</button>
+<button onclick="tab('calendario',this)">Calendario</button>
+</nav>
+
+<section id="hoy" class="activeSection">
+<div class="card hero">
+<div class="jolu-home-brand">
+  <img src="./icons/icon-192.png" alt="Jolu">
+  <div><p class="eyebrow">JOLU</p><p style="margin:2px 0 0;color:#51467d;font-weight:800;font-size:13px">Tu asistente personal</p></div>
+</div>
+<h2>¿Qué necesitas?</h2><p>Habla, pregunta o agrega algo. Jolu lo guarda por ti.</p>
+<div class="quick">
+<button onclick="document.getElementById('question').focus()"><span>💬</span>Preguntar</button>
+<button onclick="startListening()"><span>🎙️</span>Hablar</button>
+<button onclick="tab('calendario',document.querySelectorAll('nav button')[4])"><span>📅</span>Ver calendario</button>
+<button onclick="tab('compras',document.querySelectorAll('nav button')[2])"><span>🛒</span>Compras</button>
+</div>
+</div>
+<div class="card weatherCard"><h2>🌤️ El tiempo de mañana</h2><div id="weatherBox"><div class="small">Cargando pronóstico…</div></div><div class="notifyRow"><button class="action" onclick="loadWeather(true)">🔄 Actualizar</button><button class="action" onclick="testWeatherVoice()">🔊 Probar aviso de las 19:00</button></div></div>
+<div class="card ask"><h2>💬 Pregúntale a Jolu</h2><p class="small">Ej.: “¿Qué tengo mañana?”, “¿Qué tiene Josefina el viernes?” o “¿Qué tiene Luciana esta semana?”</p>
+<div class="askbox"><input id="question" autocomplete="off" placeholder="Escribe o toca 🎙️"><button class="mic" id="mic" onclick="startListening()" aria-label="Hablar">🎙️</button><button class="action" onclick="askJolu()">Enviar</button></div><div id="answer" class="answer" style="display:none"></div></div>
+<div class="card"><span class="badge">IMPORTANTE · JUEVES Y VIERNES · 07:59</span><p><b>Pedir estacionamiento</b></p><p class="small">Jolu te recuerda pedir estacionamiento.</p><button class="action" onclick="speak(DATA.parking.message)">🔊 Probar</button></div>
+<div class="card"><h2>🎒 Josefina — Colegio</h2><div id="schoolHome"></div></div>
+<div class="card"><h2>👶 Luciana — Sala cuna</h2><div id="nurseryHome"></div></div>
+</section>
+
+<section id="hijas">
+<div class="card"><h2>🎒 Josefina — Colegio</h2><div id="school"></div></div>
+<div class="card"><h2>👶 Luciana — Sala cuna</h2><div id="nursery"></div></div>
+<div class="card"><h2>🧳 Qué llevar a sala cuna</h2><div id="routine"></div></div>
+</section>
+
+<section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado. También puedes decir: “Jolu, agrega pan a compras”.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button><button class="mic" onclick="startShoppingListening()" aria-label="Agregar compra por voz">🎙️</button></div></div></section>
+
+<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><p class="small">Agrega avisos con fecha y hora. Jolu te avisará mientras esté activa. Para avisos con Jolu completamente cerrada se necesita activar notificaciones push en el servidor.</p><div class="add" style="flex-wrap:wrap"><input id="reminderDate" type="date" style="flex:1;min-width:140px"><input id="reminderTime" type="time" value="07:59" style="flex:1;min-width:110px"><input id="reminderText" placeholder="¿Qué debe recordar Jolu?" style="flex:2;min-width:200px"><button class="action" onclick="addImportantReminder()">➕ Agregar aviso</button></div><div id="importantList" style="margin-top:12px"></div><div class="item"><span class="badge">FIJO · JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b><br><span class="small">Este aviso viene incluido en Jolu.</span></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
+
+<section id="calendario">
+<div class="card">
+<h2>📅 Agregar un calendario</h2>
+<p class="small">Elige a tu hija y sube una foto o PDF. Jolu prepara el archivo y ChatGPT lo interpreta directamente.</p>
+<div class="uploadBox">
+<div class="uploadRow"><select id="uploadPerson" class="personSelect"><option value="josefina">Josefina — Colegio</option><option value="luciana">Luciana — Sala cuna</option></select>
+<label for="calendarFile" class="fileLabel">📎 Elegir foto o PDF</label><input id="calendarFile" class="fileInput" type="file" accept=".pdf,image/*" onchange="uploadCalendar()"></div>
+<div id="uploadStatus" class="status"></div>
+<div id="chatBox" class="chatBox hidden">
+<h3 style="margin-top:0">🤖 Jolu + ChatGPT</h3>
+<p class="small">Jolu preparó tu archivo. ChatGPT verá la imagen o PDF y lo ordenará por fecha.</p>
+<button class="action full" onclick="sendToChatGPT()">🤖 Enviar archivo a ChatGPT</button>
+<div id="chatInstructions" class="tip hidden">
+<b>Cuando ChatGPT termine:</b><br>
+1. Copia el JSON que te entregue.<br>
+2. Vuelve a Jolu.<br>
+3. Pégalo aquí y toca <b>Agregar al calendario</b>.
+</div>
+<textarea id="chatResult" placeholder="Pega aquí la respuesta de ChatGPT…" aria-label="Respuesta de ChatGPT"></textarea>
+<button class="action full" onclick="importChatGPTResult()">✅ Agregar al calendario</button>
+<div class="tip">💡 No necesitas configurar una API ni pagar saldo de OpenAI.</div>
+</div>
+</div></div>
+<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><button class="action" onclick="changeCalendarMonth(-1)" style="margin-top:0">‹</button><h2 id="calendarTitle" style="margin:0;text-align:center"></h2><button class="action" onclick="changeCalendarMonth(1)" style="margin-top:0">›</button></div><div id="calendarGrid"></div><div id="calendarEvents" style="margin-top:14px"></div></div>
+</section>
+</main>
+<button class="fab" onclick="startListening()" aria-label="Hablar con Jolu">🎙️</button>
+<script>
+const DATA={
+appName:'Jolu',
+parking:{
+days:[4,5],
+time:'07:59',
+important:true,
+message:'Jolu, son las 7:59. Recuerda pedir estacionamiento.'
+},
+shopping:['cuscús','fideos largos','dulce membrillo light','pan integral'],
+events:[
+['2026-08-03','Colegio','Inicio evaluaciones estandarizadas de Inglés Tradicional y evaluaciones externas orales.'],
+['2026-08-05','Colegio','Simulacro de refugio.'],
+['2026-08-10','Colegio','Inicio Sociograma 2 BraveUP!.'],
+['2026-08-15','Colegio','Feriado — Asunción de la Virgen.'],
+['2026-08-17','Colegio','Término Sociograma 2 BraveUP! y Digital Citizenship Week.'],
+['2026-08-20','Colegio','Ensayo PAES DEMRE IV medio.'],
+['2026-08-21','Colegio','Ensayo PAES DEMRE IV medio y Green Day: polera o accesorio verde.'],
+['2026-08-24','Colegio','Semana de Evaluación Unidad 3, Lenguaje y Matemática 1° Básico a II Medio. Semana de las Ciencias.'],
+['2026-08-28','Colegio','Jeans Day CAMPUR general de estudiantes.'],
+['2026-08-10','Sala cuna','Traer un objeto tecnológico desde el hogar, dentro de un estuche.'],
+['2026-08-12','Sala cuna','Camión de juguete tamaño mediano con nombre para jugar con arena.'],
+['2026-08-13','Sala cuna','Cumpleaños de Constancio N°2.'],
+['2026-08-14','Sala cuna','Día de la familia — horario a confirmar.'],
+['2026-08-18','Sala cuna','Fruta picada para receta, en recipiente pequeño con tapa y nombre.'],
+['2026-08-21','Sala cuna','Venir desde el hogar con vestimenta en blanco y negro.'],
+['2026-08-25','Sala cuna','1 espejo mediano con nombre.'],
+['2026-08-26','Sala cuna','Día de la técnico en párvulos — enviar colación para compartir a las 15:30.'],
+['2026-08-28','Sala cuna','Reunión técnica — retiro a las 15:30.'],
+['2026-09-02','Josefina','🎂 Cumpleaños de Josefina.'],
+['2026-09-05','Josefina','💃 Baile de Josefina a las 11:30 — debe estar en el colegio.'],
+['2026-09-05','Josefina','🏫 A las 09:00 hay que estar en el stand del colegio para vender.'],
+['2026-09-01','Sala cuna','Ropa para ensuciar + 1 reciclado de material reciclable por cada niño.'],
+['2026-09-03','Sala cuna','1 botella plástica de 1 litro.'],
+['2026-09-04','Sala cuna','Baile sala cuna — jardín cerrado.'],
+['2026-09-25','Sala cuna','Carrito de Primavera: traer tu mejor outfit acorde a la primavera — desfile.']
+],
+nursery_daily:[
+'Cepillo dental + gel dentífrico',
+'Bolsa para ropa sucia',
+'7 pañales diarios',
+'Babero lavable con mangas'
+],
+nursery_clothing:['2 o 3 mudas completas según clima'],
+nursery_medications:['Antipirético SOS','Termómetro','Crema para coceduras']
+};
+
+const SHOPPING_KEY='natShoppingV2'; const IMPORTED_EVENTS_KEY='natImportedEventsV1';
+const USER_EVENTS_KEY='natAgendaEventsV1';
+const AVATAR_KEY='natAvatarV1';
+const NOTIFY_KEY='natNotifyV1';
+const WEATHER_CITY_KEY='natWeatherCityV1';
+const WEATHER_LAST_KEY='natWeatherLastV1';
+const REMINDER_LAST_KEY='natReminderLastV1';
+const VOICE_KEY='natVoiceV1';
+const IMPORTANT_KEY='natImportantV1';
+const DELETED_EVENTS_KEY='natDeletedEventsV1';
+
+function tab(id,b){
+document.querySelectorAll('section').forEach(x=>x.classList.remove('activeSection'));
+document.getElementById(id).classList.add('activeSection');
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+b.classList.add('active');
+}
+
+function changeAvatar(){
+ const input=document.getElementById('avatarFile');
+ if(input)input.click();
+}
+function openSettings(){
+ const o=document.getElementById('settingsOverlay');
+ if(o){
+   o.classList.add('open');
+   renderSettingsAvatar();
+   updateNotifyStatus();
+   const c=document.getElementById('weatherCity');
+   if(c)c.value=localStorage.getItem(WEATHER_CITY_KEY)||'Santiago, Chile';
+   loadVoiceSettings();
+ }
+}
+function closeSettings(e){
+ if(e && e.target!==e.currentTarget)return;
+ const o=document.getElementById('settingsOverlay');if(o)o.classList.remove('open');
+}
+function renderSettingsAvatar(){
+ const box=document.getElementById('settingsAvatarPreview');if(!box)return;
+ const saved=localStorage.getItem(AVATAR_KEY);box.innerHTML=saved?'<img src="'+saved+'" alt="Avatar">':'N';
+}
+function removeAvatar(){localStorage.removeItem(AVATAR_KEY);renderAvatar();renderSettingsAvatar();}
+function saveWeatherCity(){
+ const c=document.getElementById('weatherCity'),city=(c?c.value:'').trim();
+ if(!city){alert('Escribe una ciudad.');return;}
+ localStorage.setItem(WEATHER_CITY_KEY,city);loadWeather(true);
+}
+
+async function saveAvatar(file){
+ if(!file)return;
+ if(!file.type.startsWith('image/')){alert('Elige una imagen.');return;}
+ try{
+  const data=await resizeAvatar(file);
+  localStorage.setItem(AVATAR_KEY,data);
+  renderAvatar();
+  renderSettingsAvatar();
+  updateAvatarIcon(data);
+ }catch(e){
+  console.error(e);
+  alert('No pude guardar la foto. Prueba con otra imagen.');
+ }
+}
+
+function resizeAvatar(file){
+ return new Promise((resolve,reject)=>{
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{
+   const max=512,scale=Math.min(1,max/Math.max(img.width,img.height));
+   const canvas=document.createElement('canvas');
+   canvas.width=Math.max(1,Math.round(img.width*scale));
+   canvas.height=Math.max(1,Math.round(img.height*scale));
+   const ctx=canvas.getContext('2d');
+   ctx.drawImage(img,0,0,canvas.width,canvas.height);
+   URL.revokeObjectURL(url);
+   resolve(canvas.toDataURL('image/jpeg',.86));
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Imagen no válida'));};
+  img.src=url;
+ });
+}
+
+function updateAvatarIcon(data){
+ const links=document.querySelectorAll('link[rel=\"icon\"],link[rel=\"apple-touch-icon\"]');
+ links.forEach(link=>{ link.href=data; });
+}
+
+function renderAvatar(){
+ const box=document.getElementById('avatarBox');
+ if(!box)return;
+ const saved=localStorage.getItem(AVATAR_KEY);
+ if(saved){
+  box.className='';
+  box.innerHTML='<img class="profile-photo" src="'+saved+'" alt="Foto de perfil de Jolu">';
+ }else{
+  box.className='avatar-placeholder';
+  box.textContent='N';
+ }
+}
+
+async function enableNotifications(){
+  if(!('Notification' in window)){alert('Este navegador no permite notificaciones.');return false;}
+  const p=await Notification.requestPermission();
+  localStorage.setItem(NOTIFY_KEY,p==='granted'?'1':'0');
+  updateNotifyStatus();
+  if(p==='granted'){new Notification('Jolu',{body:'Listo. Los avisos importantes están activados.'}); return true;}
+  alert('Las notificaciones no fueron autorizadas. Puedes activarlas desde los permisos del navegador.');
+  return false;
+}
+function updateNotifyStatus(){
+ const el=document.getElementById('notifyStatus'); if(!el)return;
+ if('Notification' in window && Notification.permission==='granted') el.textContent='✅ Activados';
+ else el.textContent='';
+}
+function notifyUser(title,body,speechText){
+ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); }catch(e){}
+ if(speechText) speak(speechText);
+}
+function localClock(){
+ const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',hour12:false,weekday:'short'}).formatToParts(new Date());
+ return {hour:Number(p.find(x=>x.type==='hour').value),minute:Number(p.find(x=>x.type==='minute').value),weekday:p.find(x=>x.type==='weekday').value};
+}
+function getImportantReminders(){try{return JSON.parse(localStorage.getItem(IMPORTANT_KEY)||'[]');}catch(e){return [];} }
+function saveImportantReminders(a){localStorage.setItem(IMPORTANT_KEY,JSON.stringify(a));}
+function addImportantReminder(){
+ const date=document.getElementById('reminderDate').value,time=document.getElementById('reminderTime').value,text=document.getElementById('reminderText').value.trim();
+ if(!date||!time||!text){alert('Completa fecha, hora y aviso.');return;}
+ const a=getImportantReminders();a.push({id:Date.now()+Math.random(),date,time,text});saveImportantReminders(a);document.getElementById('reminderText').value='';renderImportantReminders();
+}
+function deleteImportantReminder(id){saveImportantReminders(getImportantReminders().filter(x=>x.id!==id));renderImportantReminders();}
+function renderImportantReminders(){
+ const box=document.getElementById('importantList');if(!box)return;const a=getImportantReminders().sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time));
+ box.innerHTML=a.length?a.map(x=>`<div class="item"><div class="eventRow"><div class="eventText"><span class="badge">${x.date} · ${x.time}</span><br><b>🔔 ${escapeHtml(x.text)}</b></div><button class="deleteBtn" onclick="deleteImportantReminder(${x.id})">🗑️ Borrar</button></div></div>`).join(''):'<div class="small">No tienes avisos importantes personalizados.</div>';
+}
+function checkCustomReminders(){
+ const c=localClock(),todayKey=keyDate(today()),nowHM=String(c.hour).padStart(2,'0')+':'+String(c.minute).padStart(2,'0');
+ const lastKey='natCustomReminderLastV1_'+todayKey+'_'+nowHM;
+ if(localStorage.getItem('natCustomReminderFired')===lastKey)return;
+ const hits=getImportantReminders().filter(x=>x.date===todayKey&&x.time===nowHM);
+ if(hits.length){localStorage.setItem('natCustomReminderFired',lastKey);hits.forEach(x=>notifyUser('Jolu · Aviso importante',x.text,'Jolu: son las '+x.time+'. Recuerda '+x.text+'.'));}
+}
+function parseShoppingVoice(text){
+ let s=text.trim();let n=s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ if(!/(agrega|anota|suma|compra|comprar|pon|mete).*(compra|lista)|^(agrega|anota|suma|pon|mete)\b/.test(n))return null;
+ let clean=s.replace(/^(natalia[,.]?\s*)?(agrega|agregame|anota|anotame|suma|sumame|pon|mete)\s*/i,'').replace(/\b(a|en)\s+(la\s+)?(lista|compras)\b/i,'').replace(/^compras\s+/i,'').trim();
+ if(!clean)return null;return clean.replace(/[.!?]+$/,'').trim();
+}
+function tryAddShoppingVoice(text){const item=parseShoppingVoice(text);if(!item)return false;const l=list();const parts=item.split(/\s*,\s*|\s+y\s+/i).map(x=>x.trim()).filter(Boolean);parts.forEach(x=>{if(!l.some(v=>v.toLowerCase()===x.toLowerCase()))l.push(x);});localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));render();const msg=parts.length===1?'Listo. Agregué '+parts[0]+' a la lista de compras.':'Listo. Agregué '+parts.length+' productos a la lista de compras.';const box=document.getElementById('answer');if(box){box.style.display='block';box.innerHTML='<b>🛒 Compras:</b> '+parts.map(escapeHtml).join(', ');}speak(msg);return true;}
+function tryShoppingDeleteVoice(text){
+ const n=text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ if(!/^(borra|elimina|quita|saca)\b/.test(n)||!/(compra|lista|producto)/.test(n))return false;
+ let item=text.replace(/^(natalia[,.]?\s*)?(borra|elimina|quita|saca)\s*/i,'').replace(/\b(de\s+)?(la\s+)?(lista\s+de\s+)?compras?\b/i,'').trim().replace(/[.!?]+$/,'');
+ const l=list(),idx=l.findIndex(x=>x.toLowerCase()===item.toLowerCase());if(idx<0){speak('No encontré '+item+' en la lista de compras.');return true;}l.splice(idx,1);localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));render();speak('Listo. Borré '+item+' de la lista de compras.');return true;
+}
+function startShoppingListening(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('El reconocimiento de voz no está disponible.');return;}
+ const r=new SR();r.lang='es-CL';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{const t=e.results[0][0].transcript;if(!tryAddShoppingVoice(t))alert('Di algo como: “Jolu, agrega pan y leche a compras”.');};r.start();
+}
+function checkImportantReminders(){
+ const c=localClock();
+ const todayKey=keyDate(today());
+ const last=localStorage.getItem(REMINDER_LAST_KEY);
+ if(c.hour===7 && c.minute===59 && DATA.parking.days.includes(today().getDay()) && last!==todayKey){
+   localStorage.setItem(REMINDER_LAST_KEY,todayKey);
+   notifyUser('Jolu · Aviso importante','Son las 7:59. Recuerda pedir estacionamiento.','Jolu: son las 7:59. Recuerda pedir estacionamiento.');
+ }
+}
+function weatherCodeText(code){
+ if(code===0)return ['☀️','soleado'];
+ if([1,2].includes(code))return ['🌤️','parcialmente nublado'];
+ if(code===3)return ['☁️','nublado'];
+ if([45,48].includes(code))return ['🌫️','con neblina'];
+ if([51,53,55,56,57].includes(code))return ['🌦️','con lloviznas'];
+ if([61,63,65,66,67].includes(code))return ['🌧️','con lluvia'];
+ if([71,73,75,77].includes(code))return ['❄️','con nieve'];
+ if([80,81,82].includes(code))return ['🌦️','con chubascos'];
+ if([95,96,99].includes(code))return ['⛈️','con tormentas'];
+ return ['🌤️','variable'];
+}
+async function loadWeather(manual=false){
+ const box=document.getElementById('weatherBox'); if(!box)return;
+ const city=localStorage.getItem(WEATHER_CITY_KEY)||'Santiago, Chile';
+ box.innerHTML='<div class="small">⏳ Consultando el pronóstico…</div>';
+ try{
+   const geo=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city.split(',')[0])+'&count=1&language=es&format=json').then(r=>r.json());
+   if(!geo.results||!geo.results.length)throw new Error('Ciudad no encontrada');
+   const g=geo.results[0];
+   const url='https://api.open-meteo.com/v1/forecast?latitude='+g.latitude+'&longitude='+g.longitude+'&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FSantiago&forecast_days=2';
+   const w=await fetch(url).then(r=>r.json());
+   const iconText=weatherCodeText(w.daily.weather_code[1]);
+   const max=Math.round(w.daily.temperature_2m_max[1]);
+   const min=Math.round(w.daily.temperature_2m_min[1]);
+   const rain=w.daily.precipitation_probability_max[1];
+   const text='Mañana van a haber '+max+' grados, con mínima de '+min+' y estará '+iconText[1]+'.'+(rain!=null?' Probabilidad de lluvia: '+rain+'%.':'');
+   box.innerHTML='<div class="weatherMain"><div class="weatherIcon">'+iconText[0]+'</div><div><div class="weatherTemp">'+max+'°C</div><div class="weatherDetails">Mínima '+min+'°C · '+iconText[1]+(rain!=null?' · lluvia '+rain+'%':'')+'</div></div></div><p style="margin-bottom:0"><b>'+text+'</b></p><div class="small">📍 '+g.name+(g.admin1?', '+g.admin1:'')+'</div>';
+   localStorage.setItem(WEATHER_LAST_KEY,JSON.stringify({date:keyDate(today()),text,max,min,condition:iconText[1],rain}));
+ }catch(e){
+   box.innerHTML='<div class="small">No pude consultar el tiempo ahora. Revisa tu conexión e inténtalo nuevamente.</div>';
+ }
+}
+function testWeatherVoice(){
+ const raw=localStorage.getItem(WEATHER_LAST_KEY);
+ if(raw){const x=JSON.parse(raw);speak('Jolu: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
+ else {loadWeather(true).then(()=>setTimeout(testWeatherVoice,500));}
+}
+function checkEveningWeather(){
+ const c=localClock(),todayKey=keyDate(today()),last=localStorage.getItem('natWeatherSpokenV1');
+ if(c.hour===19 && c.minute===0 && last!==todayKey){
+   localStorage.setItem('natWeatherSpokenV1',todayKey);
+   const raw=localStorage.getItem(WEATHER_LAST_KEY);
+   if(raw){const x=JSON.parse(raw);notifyUser('Jolu · Tiempo de mañana','Mañana: '+x.max+'°C, '+x.condition+'.','Jolu: mañana van a haber '+x.max+' grados, con mínima de '+x.min+' y estará '+x.condition+'.'+(x.rain!=null?' Probabilidad de lluvia: '+x.rain+' por ciento.':''));}
+   else loadWeather(false).then(()=>setTimeout(testWeatherVoice,500));
+ }
+}
+function startAssistantChecks(){
+ updateNotifyStatus();
+ loadWeather(false);
+ checkImportantReminders(); checkEveningWeather();
+ setInterval(()=>{checkImportantReminders();checkEveningWeather();},15000);
+}
+
+function getVoiceSettings(){
+  try{const x=JSON.parse(localStorage.getItem(VOICE_KEY)||'{}');return {voiceName:x.voiceName||'',rate:Number(x.rate)||.95,pitch:Number(x.pitch)||1};}catch(e){return {voiceName:'',rate:.95,pitch:1};}
+}
+function getAvailableVoices(){return ('speechSynthesis' in window)?(speechSynthesis.getVoices()||[]):[];}
+function populateVoiceSelect(){
+  const sel=document.getElementById('voiceSelect'); if(!sel)return;
+  const voices=getAvailableVoices(), previous=getVoiceSettings().voiceName;
+  sel.innerHTML='';
+  const spanish=voices.filter(v=>/^es(-|_|$)/i.test(v.lang));
+  const ordered=spanish.concat(voices.filter(v=>!spanish.includes(v)));
+  if(!ordered.length){sel.innerHTML='<option value="">Voz predeterminada del teléfono</option>';return;}
+  ordered.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+' · '+v.lang;sel.appendChild(o);});
+  if(previous&&ordered.some(v=>v.name===previous))sel.value=previous;
+}
+function updateVoiceLabel(){
+  const r=document.getElementById('voiceRate'),p=document.getElementById('voicePitch');
+  const rv=document.getElementById('voiceRateValue'),pv=document.getElementById('voicePitchValue');
+  if(r&&rv)rv.textContent=Number(r.value).toFixed(2); if(p&&pv)pv.textContent=Number(p.value).toFixed(2);
+}
+function loadVoiceSettings(){const x=getVoiceSettings(),r=document.getElementById('voiceRate'),p=document.getElementById('voicePitch');if(r)r.value=x.rate;if(p)p.value=x.pitch;updateVoiceLabel();populateVoiceSelect();}
+function saveVoiceSettings(){
+  const sel=document.getElementById('voiceSelect');
+  const r=document.getElementById('voiceRate');
+  const p=document.getElementById('voicePitch');
+  const settings={
+    voiceName:sel?sel.value:'',
+    rate:r?Number(r.value):.95,
+    pitch:p?Number(p.value):1
+  };
+  try{
+    localStorage.setItem(VOICE_KEY,JSON.stringify(settings));
+    const st=document.getElementById('voiceStatus');
+    if(st){
+      st.textContent='✅ Voz guardada correctamente';
+      st.className='small success';
+      setTimeout(()=>{st.textContent='';},2500);
+    }
+  }catch(e){
+    console.error(e);
+    const st=document.getElementById('voiceStatus');
+    if(st){
+      st.textContent='❌ No se pudo guardar';
+      st.className='small';
+    }
+  }
+}
+function testSelectedVoice(){const sel=document.getElementById('voiceSelect'),r=document.getElementById('voiceRate'),p=document.getElementById('voicePitch');speakWithSettings('Hola, soy Jolu. Esta es la voz que elegiste.',{voiceName:sel?sel.value:'',rate:r?Number(r.value):.95,pitch:p?Number(p.value):1});}
+function speakWithSettings(t,settings){
+  if(!('speechSynthesis' in window)){alert('La voz no está disponible en este navegador.');return;}
+  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); const v=getAvailableVoices().find(v=>v.name===settings.voiceName);
+  if(v){u.voice=v;u.lang=v.lang;}else u.lang='es-CL'; u.rate=settings.rate;u.pitch=settings.pitch;speechSynthesis.speak(u);
+}
+function speak(t){if(!('speechSynthesis' in window)){alert('La voz no está disponible en este navegador.');return;}speakWithSettings(t,getVoiceSettings());}
+
+function dateObj(s){return new Date(s+'T12:00:00');}
+
+function fmtDate(d){
+return d.toLocaleDateString('es-CL',{day:'numeric',month:'long'});
+}
+
+function keyDate(d){
+return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function today(){
+const parts=new Intl.DateTimeFormat('en-CA',{
+timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'
+}).formatToParts(new Date());
+const y=Number(parts.find(x=>x.type==='year').value);
+const m=Number(parts.find(x=>x.type==='month').value);
+const day=Number(parts.find(x=>x.type==='day').value);
+return new Date(y,m-1,day,12,0,0,0);
+}
+
+function getImportedEvents(){
+try{return JSON.parse(localStorage.getItem(IMPORTED_EVENTS_KEY)||'[]');}catch(e){return [];}
+}
+
+function saveImportedEvents(events){
+const current=getImportedEvents();
+const merged=current.concat(events||[]);
+const seen=new Set();
+const clean=merged.filter(e=>{
+if(!Array.isArray(e)||e.length<3)return false;
+const k=e[0]+'|'+e[1]+'|'+e[2];
+if(seen.has(k))return false;
+seen.add(k);return true;
+});
+localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(clean));
+}
+
+function getDeletedEvents(){try{return JSON.parse(localStorage.getItem(DELETED_EVENTS_KEY)||'[]');}catch(e){return [];} }
+function eventKey(e){return e[0]+'|'+e[1]+'|'+e[2];}
+function allFixedEvents(){const deleted=new Set(getDeletedEvents());return DATA.events.concat(getImportedEvents()).filter(e=>!deleted.has(eventKey(e)));}
+
+function eventsForDates(from,to,category){
+return allFixedEvents().filter(e=>{
+const d=dateObj(e[0]);
+return d>=from&&d<=to&&(!category||e[1].toLowerCase()===category);
+}).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function parkingFor(d){
+if(DATA.parking.days.includes(d.getDay()))return 'A las 07:59 debes pedir estacionamiento.';
+return '';
+}
+
+function addParkingForRange(from,to,lines){
+const cur=new Date(from);
+while(cur<=to){
+const reminder=parkingFor(cur);
+if(reminder)lines.push('<div class="date">Recordatorio · '+fmtDate(cur)+'</div>🔔 '+reminder);
+cur.setDate(cur.getDate()+1);
+}
+}
+
+function getSavedEvents(){
+try{return JSON.parse(localStorage.getItem(USER_EVENTS_KEY)||'[]');}catch(e){return [];}
+}
+
+function saveEvent(date,person,text){
+const arr=getSavedEvents();
+arr.push({id:Date.now()+Math.random(),date,person:person||'general',text});
+localStorage.setItem(USER_EVENTS_KEY,JSON.stringify(arr));
+}
+
+function savedEventsForDates(from,to,person){
+return getSavedEvents().filter(e=>{
+const d=dateObj(e.date);
+return !(d<from||d>to)&&(!person||e.person===person);
+}).map(e=>[e.date,e.person,e.text]);
+}
+
+function agendaEventsForDates(from,to,category){
+let fixedCategory=category;
+if(category==='josefina')fixedCategory='colegio';
+if(category==='sala cuna')fixedCategory='sala cuna';
+let fixed=eventsForDates(from,to,fixedCategory);
+if(category==='josefina')fixed=fixed.concat(savedEventsForDates(from,to,'josefina'));
+else if(category==='sala cuna')fixed=fixed.concat(savedEventsForDates(from,to,'luciana'));
+else if(category)fixed=fixed.concat(savedEventsForDates(from,to,category));
+else fixed=fixed.concat(savedEventsForDates(from,to,'general'));
+return fixed.sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function chileDateOffset(days){
+const d=today();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);
+}
+
+function parseNewSpokenEvent(text){
+const raw=text.trim();
+const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+if(/^(que|cual|tengo|hay|donde|cuando)\b/.test(s)||/\?/.test(raw))return null;
+
+let person='general';
+if(/\bjosefina\b/.test(s))person='josefina';
+else if(/\bluciana\b/.test(s)||/sala\s*cuna/.test(s))person='luciana';
+
+let offset=null;
+if(/\bpasado\s+manana\b/.test(s))offset=2;
+else if(/\bmanana\b/.test(s))offset=1;
+else if(/\bhoy\b/.test(s))offset=0;
+
+if(offset===null){
+const dias={domingo:0,lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6};
+for(const nombre of Object.keys(dias)){
+if(new RegExp('\\b'+nombre+'\\b').test(s)){
+const d=today(),actual=d.getDay(),target=dias[nombre];
+let diff=(target-actual+7)%7;if(diff===0)diff=7;offset=diff;break;
+}}
+}
+
+if(offset===null){
+const months={enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+const monthPattern=Object.keys(months).join('|');
+const named=s.match(new RegExp('\\b(\\d{1,2})\\s*(?:de\\s*)?('+monthPattern+')(?:\\s*(?:de\\s*)?(\\d{4}))?\\b'));
+if(named){
+const day=Number(named[1]),month=months[named[2]],year=named[3]?Number(named[3]):today().getFullYear();
+const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+let cleaned=raw.replace(/^(agrega|agregame|anota|anotame|guarda|guardame|recuerda|recuerdame|suma|sumame|agenda|agendame)\s*/i,'')
+.replace(/\bpara\s+(josefina|luciana)\b\s*/i,'').replace(/\b(josefina|luciana)\b\s*/i,'')
+.replace(/\b\d{1,2}\s*(?:de\s*)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s*(?:de\s*)?\d{4})?\b/i,'').trim();
+return {date,person,text:cleaned};
+}
+const dm=s.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?\b/);
+if(dm){
+const day=Number(dm[1]),month=Number(dm[2]),year=dm[3]?Number(dm[3]):today().getFullYear();
+const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+let cleaned=raw.replace(/^(agrega|agregame|anota|anotame|guarda|guardame|recuerda|recuerdame|suma|sumame|agenda|agendame)\s*/i,'')
+.replace(/\bpara\s+(josefina|luciana)\b\s*/i,'').replace(/\b(josefina|luciana)\b\s*/i,'')
+.replace(/\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{4})?\b/i,'').trim();
+return {date,person,text:cleaned};
+}}
+if(offset===null)return null;
+
+let cleaned=raw.replace(/^(agrega|anota|guarda|recuerda)\s*/i,'')
+.replace(/\bpara\s+(josefina|luciana)\b\s*/i,'').replace(/\b(josefina|luciana)\b\s*/i,'')
+.replace(/\bpasado\s+mañana\b|\bpasado\s+manana\b|\bmañana\b|\bmanana\b|\bhoy\b/i,'')
+.replace(/^\s*(debo|tengo que|hay que|necesito|debe|deben)\s+/i,'').trim();
+
+return {date:chileDateOffset(offset),person,text:cleaned};
+}
+
+function parseSpokenDeleteTarget(text){
+  const raw=text.trim();
+  const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  let person=null;
+  if(/\bjosefina\b/.test(s)||/\bcolegio\b/.test(s))person='josefina';
+  else if(/\bluciana\b/.test(s)||/sala\s*cuna/.test(s))person='luciana';
+
+  let date=null;
+  const base=today();
+  if(/\bpasado\s+manana\b/.test(s)){base.setDate(base.getDate()+2);date=keyDate(base);}
+  else if(/\bmanana\b/.test(s)){base.setDate(base.getDate()+1);date=keyDate(base);}
+  else if(/\bhoy\b/.test(s)){date=keyDate(base);}
+  else{
+    const days={domingo:0,lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6};
+    for(const n of Object.keys(days)){
+      if(new RegExp('\\b'+n+'\\b').test(s)){
+        const actual=base.getDay(),target=days[n];let diff=(target-actual+7)%7;if(diff===0)diff=7;
+        base.setDate(base.getDate()+diff);date=keyDate(base);break;
+      }
+    }
+  }
+  if(!date){
+    const months={enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+    const mp=Object.keys(months).join('|');
+    const m=s.match(new RegExp('\\b(\\d{1,2})\\s*(?:de\\s*)?('+mp+')(?:\\s*(?:de\\s*)?(\\d{4}))?\\b'));
+    if(m){const y=m[3]?Number(m[3]):today().getFullYear();date=`${y}-${String(months[m[2]]).padStart(2,'0')}-${String(Number(m[1])).padStart(2,'0')}`;}
+  }
+
+  let terms=s.replace(/^(borra|borrar|elimina|eliminar|quita|quitar|saca|sacar|borra el|elimina el|quita el)\s*/,'')
+    .replace(/\b(josefina|luciana|colegio|sala\s*cuna)\b/g,'')
+    .replace(/\bpasado\s+manana\b|\bmanana\b|\bhoy\b/g,'')
+    .replace(/\b(domingo|lunes|martes|miercoles|jueves|viernes|sabado)\b/g,'')
+    .replace(/\b\d{1,2}\s*(?:de\s*)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s*(?:de\s*)?\d{4})?\b/g,'')
+    .replace(/\b(?:actividad|evento|aviso|recordatorio)\b/g,'')
+    .replace(/\s+/g,' ').trim();
+  return {date,person,terms};
+}
+
+function tryDeleteSpokenEvent(transcript){
+  const s=transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(!/^\s*(borra|borrar|elimina|eliminar|quita|quitar|saca|sacar)\b/.test(s))return false;
+  const target=parseSpokenDeleteTarget(transcript);
+  if(!target.date){
+    speak('Dime la fecha. Por ejemplo: borra la actividad de mañana de Josefina.');
+    return true;
+  }
+
+  const all=allAgendaEvents();
+  const matches=all.filter(e=>{
+    if(e[0]!==target.date)return false;
+    if(target.person==='josefina' && !['Colegio','Josefina'].includes(e[1]))return false;
+    if(target.person==='luciana' && e[1]!=='Sala cuna')return false;
+    if(target.terms && target.terms.length && !e[2].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(target.terms))return false;
+    return true;
+  });
+  if(!matches.length){
+    const who=target.person==='josefina'?' de Josefina':target.person==='luciana'?' de Luciana':'';
+    const box=document.getElementById('answer');box.style.display='block';box.innerHTML='<b>No encontré una actividad para borrar</b> '+fmtDate(dateObj(target.date))+who+'.';
+    speak('No encontré una actividad para borrar ese día.');
+    return true;
+  }
+  matches.forEach(e=>removeAgendaEvent(e[0],e[1],e[2]));
+  const who=target.person==='josefina'?' de Josefina':target.person==='luciana'?' de Luciana':'';
+  const box=document.getElementById('answer');box.style.display='block';box.innerHTML='<b>Borrado:</b> '+matches.map(e=>'• '+escapeHtml(e[2])).join('<br>');
+  speak('Listo. Borré '+matches.length+' actividad'+(matches.length===1?'':'es')+' del '+fmtDate(dateObj(target.date))+who+'.');
+  return true;
+}
+
+function tryAddSpokenEvent(transcript){
+const s=transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const shouldSave=/^\s*(agrega|agregame|anota|anotame|guarda|guardame|recuerda|recuerdame|suma|sumame|agenda|agendame)\b/.test(s)||/\b(debo|tengo\s+que|hay\s+que|necesito)\b/.test(s);
+if(!shouldSave)return false;
+const item=parseNewSpokenEvent(transcript);
+if(!item||!item.text)return false;
+saveEvent(item.date,item.person,item.text);
+const who=item.person==='josefina'?'Josefina':item.person==='luciana'?'Luciana':'para ti';
+const day=fmtDate(dateObj(item.date));
+const box=document.getElementById('answer');
+box.style.display='block';
+box.innerHTML='<div><b>Guardado:</b> '+who+' — '+day+'</div><div>• '+item.text+'</div>';
+speak('Listo. Guardé '+item.text+' para '+who+' el '+day+'.');
+return true;
+}
+
+function buildAnswer(q){
+const s=q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const d=today();let from,to,label='hoy',category=null;
+const dias={domingo:0,lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6};
+let diaEncontrado=null;
+for(const nombre of Object.keys(dias)){if(s.includes(nombre)){diaEncontrado=nombre;break;}}
+
+if(/proxima semana|siguiente semana/.test(s)){
+const day=d.getDay(),daysUntilNextMonday=(8-day)%7||7;
+from=new Date(d);from.setDate(d.getDate()+daysUntilNextMonday);
+to=new Date(from);to.setDate(from.getDate()+6);label='la próxima semana';
+}else if(/esta semana/.test(s)){
+const daysFromMonday=(d.getDay()+6)%7;
+from=new Date(d);from.setDate(d.getDate()-daysFromMonday);
+to=new Date(from);to.setDate(from.getDate()+6);label='esta semana';
+}else if(diaEncontrado){
+const objetivo=dias[diaEncontrado],actual=d.getDay();let diferencia=(objetivo-actual+7)%7;
+if(diferencia===0&&!/hoy/.test(s))diferencia=7;
+from=new Date(d);from.setDate(d.getDate()+diferencia);to=new Date(from);label=diferencia===0?'hoy':diaEncontrado;
+}else if(/pasado\s+manana/.test(s)){
+from=new Date(d);from.setDate(d.getDate()+2);to=new Date(from);label='pasado mañana';
+}else if(/\bmanana\b/.test(s)){
+from=new Date(d);from.setDate(d.getDate()+1);to=new Date(from);label='mañana';
+}else{from=new Date(d);to=new Date(d);label='hoy';}
+
+if(/josefina/.test(s))category='josefina';
+else if(/luciana/.test(s))category='sala cuna';
+else if(/colegio/.test(s))category='colegio';
+else if(/sala cuna|guarderia|jardin/.test(s))category='sala cuna';
+
+const ev=agendaEventsForDates(from,to,category),lines=[];
+if(ev.length){
+let last='';
+ev.forEach(e=>{
+if(e[0]!==last){lines.push('<div class="date">'+fmtDate(dateObj(e[0]))+'</div>');last=e[0];}
+lines.push('• '+e[2]);
+});
+}else{
+const persona=(category==='colegio'||category==='josefina')?'Josefina':category==='sala cuna'?'Luciana':'';
+lines.push(persona?'Para '+persona+' no tienes actividades registradas para '+label+'.':'No tienes actividades registradas para '+label+'.');
+}
+if(!category)addParkingForRange(from,to,lines);
+const answerPrefix=category==='colegio'||category==='josefina'?'Para Josefina tienes':category==='sala cuna'?'Para Luciana tienes':'Para '+label+' tienes';
+return{text:answerPrefix+': '+lines.map(x=>x.replace(/<[^>]+>/g,'')).join(' '),html:'<div><b>'+answerPrefix+':</b></div>'+lines.join('<br>')};
+}
+
+function askJolu(){
+const q=document.getElementById('question').value.trim();if(!q)return;
+if(tryDeleteSpokenEvent(q)){render();document.getElementById('question').value='';return;}
+if(tryAddSpokenEvent(q)){render();document.getElementById('question').value='';return;}
+const a=buildAnswer(q),box=document.getElementById('answer');
+box.style.display='block';box.innerHTML=a.html;speak(a.text);
+}
+
+let recognition=null;
+function startListening(){
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){alert('El reconocimiento de voz no está disponible en este navegador. Puedes escribir la pregunta.');return;}
+if(recognition){recognition.stop();return;}
+recognition=new SR();recognition.lang='es-CL';recognition.interimResults=false;recognition.maxAlternatives=1;
+const mic=document.getElementById('mic');mic.classList.add('listening');
+recognition.onresult=e=>{
+const transcript=e.results[0][0].transcript;
+document.getElementById('question').value=transcript;
+if(tryDeleteSpokenEvent(transcript)){render();document.getElementById('question').value='';}
+else if(!tryAddSpokenEvent(transcript))askJolu();else{render();document.getElementById('question').value='';}
+};
+recognition.onerror=()=>{};
+recognition.onend=()=>{mic.classList.remove('listening');recognition=null;};
+recognition.start();
+}
+
+function escapeHtml(v){
+return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+}
+
+function removeAgendaEvent(date,category,text){
+  const key=eventKey([date,category,text]);
+  const deleted=getDeletedEvents();
+  if(!deleted.includes(key)){deleted.push(key);localStorage.setItem(DELETED_EVENTS_KEY,JSON.stringify(deleted));}
+  let person=null;
+  if(category==='Colegio'||category==='Josefina') person='josefina';
+  else if(category==='Sala cuna'||category==='Luciana') person='luciana';
+  else if(category==='general') person='general';
+  const imported=getImportedEvents().filter(e=>eventKey(e)!==key);
+  localStorage.setItem(IMPORTED_EVENTS_KEY,JSON.stringify(imported));
+  const saved=getSavedEvents().filter(e=>!(e.date===date && (!person||e.person===person) && e.text===text));
+  localStorage.setItem(USER_EVENTS_KEY,JSON.stringify(saved));
+  render();
+}
+
+function eventsHtml(arr){
+return arr.sort((a,b)=>a[0].localeCompare(b[0])).map(x=>`<div class="item"><div class="date">${fmtDate(dateObj(x[0]))}</div><div class="eventRow"><div class="eventText">${escapeHtml(x[2])}</div><button class="deleteBtn" onclick='removeAgendaEvent(${JSON.stringify(x[0])},${JSON.stringify(x[1])},${JSON.stringify(x[2])})'>🗑️ Borrar</button></div></div>`).join('');
+}
+
+function list(){
+try{
+  const v2=localStorage.getItem(SHOPPING_KEY);
+  if(v2)return JSON.parse(v2);
+  const old=localStorage.getItem('natShopping');
+  if(old){localStorage.setItem(SHOPPING_KEY,old);return JSON.parse(old);}
+  return [];
+}catch(e){return [];}
+}
+
+let calendarDate=new Date();calendarDate.setDate(1);
+let selectedCalendarDate=null;
+
+function allAgendaEvents(){
+const saved=getSavedEvents().map(e=>[e.date,e.person==='josefina'?'Colegio':e.person==='luciana'?'Sala cuna':'general',e.text]);
+return allFixedEvents().concat(saved).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function calendarKey(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+
+function renderCalendar(){
+const title=document.getElementById('calendarTitle'),grid=document.getElementById('calendarGrid'),eventsBox=document.getElementById('calendarEvents');
+if(!title||!grid||!eventsBox)return;
+const y=calendarDate.getFullYear(),m=calendarDate.getMonth();
+const monthName=calendarDate.toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+title.textContent=monthName.charAt(0).toUpperCase()+monthName.slice(1);
+const heads=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+grid.innerHTML=heads.map(h=>`<div class="calendar-head">${h}</div>`).join('');
+const first=new Date(y,m,1),start=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate();
+const now=today(),todayKey=calendarKey(now.getFullYear(),now.getMonth(),now.getDate());
+const events=allAgendaEvents(),byDate={};
+events.forEach(e=>(byDate[e[0]]||=[]).push(e));
+
+for(let i=0;i<42;i++){
+const n=i-start+1;let day=n,mm=m,yy=y,muted=false;
+if(n<1){day=prevDays+n;mm=m-1;muted=true;}
+else if(n>days){day=n-days;mm=m+1;muted=true;}
+const dd=new Date(yy,mm,day),key=calendarKey(dd.getFullYear(),dd.getMonth(),dd.getDate()),dayEvents=byDate[key]||[];
+const isToday=key===todayKey,isSelected=key===selectedCalendarDate;
+grid.innerHTML+=`<div class="calendar-day ${muted?'muted ':''}${isToday?'today ':''}${isSelected?'selected':''}" onclick="selectCalendarDate('${key}')"><div class="num">${day}</div>${dayEvents.length?`<span class="dot">• ${dayEvents.length===1?'Actividad':dayEvents.length+' actividades'}</span>`:''}</div>`;
+}
+if(selectedCalendarDate){
+const selected=events.filter(e=>e[0]===selectedCalendarDate);
+eventsBox.innerHTML=selected.length?`<div class="date">${fmtDate(dateObj(selectedCalendarDate))}</div>`+selected.map(e=>`<div class="item"><div class="eventRow"><div class="eventText">• <b>${escapeHtml(e[1])}</b>: ${escapeHtml(e[2])}</div><button class="deleteBtn" onclick='removeAgendaEvent(${JSON.stringify(e[0])},${JSON.stringify(e[1])},${JSON.stringify(e[2])})'>🗑️ Borrar</button></div></div>`).join(''):'<div class="small">No tienes actividades registradas para este día.</div>';
+}else{
+const monthEvents=events.filter(e=>{const dd=dateObj(e[0]);return dd.getFullYear()===y&&dd.getMonth()===m;});
+eventsBox.innerHTML=`<div class="date">Actividades de ${monthName}</div>`+(monthEvents.length?monthEvents.map(e=>`<div class="item">${fmtDate(dateObj(e[0]))} — <b>${e[1]}</b>: ${e[2]}</div>`).join(''):'<div class="small">No hay actividades registradas este mes.</div>');
+}
+}
+
+function selectCalendarDate(key){selectedCalendarDate=key;const d=dateObj(key);calendarDate=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar();}
+function changeCalendarMonth(delta){calendarDate.setMonth(calendarDate.getMonth()+delta);selectedCalendarDate=null;renderCalendar();}
+
+/* =========================================================
+   NUEVO SISTEMA: LECTURA LOCAL + APOYO DE CHATGPT
+   No usa OPENAI_API_KEY.
+   ========================================================= */
+
+let extractedCalendarText='';
+let extractedPerson='josefina';
+let uploadedCalendarFile=null;
+
+function setUploadStatus(text,error=false){
+const status=document.getElementById('uploadStatus');
+status.className='status '+(error?'error':'ok');
+status.textContent=text;
+}
+
+async function uploadCalendar(){
+const input=document.getElementById('calendarFile');
+const file=input.files&&input.files[0];
+const person=document.getElementById('uploadPerson').value;
+if(!file)return;
+
+extractedPerson=person;
+uploadedCalendarFile=file;
+document.getElementById('chatBox').classList.add('hidden');
+setUploadStatus('⏳ Leyendo '+file.name+'…');
+
+try{
+if(file.size>15*1024*1024)throw new Error('El archivo es muy grande. Usa un PDF o imagen de hasta 15 MB.');
+
+let text='';
+if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){
+text=await extractPdfText(file);
+}else if(file.type.startsWith('image/')){
+text=await extractImageText(file);
+}else{
+throw new Error('Formato no compatible. Usa PDF o imagen.');
+}
+
+text=(text||'').replace(/\s+/g,' ').trim();
+
+    if(file.type.startsWith('image/')){
+      try{
+        const reinforced=await extractImageTextReinforced(file);
+        if(reinforced && reinforced.length>text.length) text=reinforced.replace(/\s+/g,' ').trim();
+      }catch(e){ console.warn('OCR reforzado omitido',e); }
+    }
+
+if(!text||text.length<20){
+throw new Error('No pude leer suficiente texto. Prueba con una foto más nítida o un PDF con texto.');
+}
+
+extractedCalendarText=text;
+
+document.getElementById('chatBox').classList.remove('hidden');
+setUploadStatus('✅ Listo. Ya tengo el contenido del calendario. Ahora pásalo por ChatGPT para interpretarlo.');
+input.value='';
+}catch(err){
+console.error(err);
+setUploadStatus('❌ '+(err.message||'No se pudo leer el archivo.'),true);
+}
+}
+
+async function extractPdfText(file){
+const pdfjs=window['pdfjsLib'];
+if(!pdfjs)throw new Error('El lector PDF todavía está cargando. Espera unos segundos y vuelve a intentarlo.');
+
+const buffer=await file.arrayBuffer();
+const pdf=await pdfjs.getDocument({data:buffer}).promise;
+let textParts=[];
+
+for(let p=1;p<=pdf.numPages;p++){
+const page=await pdf.getPage(p);
+const content=await page.getTextContent();
+const pageText=content.items.map(x=>x.str||'').join(' ').trim();
+
+if(pageText.length>30){
+textParts.push('PÁGINA '+p+': '+pageText);
+}else{
+/* PDF escaneado: hacemos OCR de la página */
+const viewport=page.getViewport({scale:1.8});
+const canvas=document.createElement('canvas');
+canvas.width=Math.ceil(viewport.width);
+canvas.height=Math.ceil(viewport.height);
+const ctx=canvas.getContext('2d');
+await page.render({canvasContext:ctx,viewport}).promise;
+const result=await Tesseract.recognize(canvas,'spa',{
+logger:m=>console.log(m)
+});
+textParts.push('PÁGINA '+p+': '+(result.data.text||''));
+}
+}
+
+return textParts.join('\n');
+}
+
+async function extractImageText(file){
+const result=await Tesseract.recognize(file,'spa',{
+logger:m=>{
+if(m.status==='recognizing text'&&m.progress){
+setUploadStatus('⏳ Leyendo imagen… '+Math.round(m.progress*100)+'%');
+}
+}
+});
+return result.data.text||'';
+}
+
+async function extractImageTextReinforced(file){
+ const img=await new Promise((resolve,reject)=>{
+   const im=new Image();
+   im.onload=()=>resolve(im); im.onerror=reject;
+   im.src=URL.createObjectURL(file);
+ });
+ const scale=Math.max(2,Math.min(4,2200/Math.max(img.width,img.height)));
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.round(img.width*scale);
+ canvas.height=Math.round(img.height*scale);
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
+ const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+ for(let i=0;i<data.data.length;i+=4){
+   const r=data.data[i],g=data.data[i+1],b=data.data[i+2];
+   let v=0.299*r+0.587*g+0.114*b;
+   v=(v-128)*1.45+128;
+   v=Math.max(0,Math.min(255,v));
+   data.data[i]=data.data[i+1]=data.data[i+2]=v;
+ }
+ ctx.putImageData(data,0,0);
+ const result=await Tesseract.recognize(canvas,'spa',{
+   logger:m=>{
+     if(m.status==='recognizing text'&&m.progress){
+       setUploadStatus('⏳ Revisando fechas… '+Math.round(m.progress*100)+'%');
+     }
+   }
+ });
+ URL.revokeObjectURL(img.src);
+ return result.data.text||'';
+}
+
+function buildChatPrompt(){
+ const persona=extractedPerson==='josefina'?'Josefina — Colegio':'Luciana — Sala cuna';
+ return `Necesito que analices el calendario de ${persona} que está ADJUNTO a este mensaje.
+
+IMPORTANTE: debes mirar directamente la imagen o PDF adjunto. El texto OCR de abajo es solo una ayuda y puede tener errores. Si el OCR contradice la imagen, SIEMPRE gana la información visible en la imagen/PDF.
+
+Busca TODAS las actividades, fechas, celebraciones, cumpleaños, materiales que haya que llevar, reuniones, cambios de horario, días especiales, retiros y cualquier información importante.
+
+Devuelve ÚNICAMENTE un JSON válido con este formato:
+[
+  {
+    "date": "YYYY-MM-DD",
+    "text": "Descripción clara de la actividad"
+  }
+]
+
+REGLAS ESTRICTAS:
+1. No inventes información.
+2. Separa cada actividad en un elemento.
+3. Lee las fechas VISUALMENTE desde el calendario.
+4. Los números escritos en la imagen tienen prioridad absoluta sobre el OCR.
+5. Si ves "04 SEPTIEMBRE", la fecha es 2026-09-04, no 2026-09-01.
+6. Usa el año que aparezca en el calendario. Si no aparece, usa 2026.
+7. No cambies una fecha porque el día de la semana no coincida.
+8. Conserva horarios, materiales y cualquier instrucción importante.
+9. No resumas tanto que se pierdan detalles.
+10. Si una fecha no puede determinarse con seguridad, NO inventes una fecha.
+11. Devuelve SOLO el JSON, sin explicaciones, títulos ni código Markdown.
+
+TEXTO OCR DE APOYO (puede contener errores):
+${extractedCalendarText}`;
+}
+
+async function copyPrompt(){
+if(!extractedCalendarText){
+alert('Primero sube y lee un calendario.');
+return;
+}
+const prompt=buildChatPrompt();
+try{
+await navigator.clipboard.writeText(prompt);
+alert('✅ Copiado. Ahora abre ChatGPT y pega el contenido en una conversación.');
+}catch(e){
+const area=document.createElement('textarea');
+area.value=prompt;
+document.body.appendChild(area);
+area.select();
+document.execCommand('copy');
+area.remove();
+alert('✅ Copiado. Ahora abre ChatGPT y pega el contenido.');
+}
+}
+
+async function sendToChatGPT(){
+ if(!uploadedCalendarFile){ alert('Primero sube y lee un calendario.'); return; }
+ const prompt=buildChatPrompt();
+ const instructions=document.getElementById('chatInstructions');
+ if(instructions)instructions.classList.remove('hidden');
+ try{
+   if(navigator.share && navigator.canShare && navigator.canShare({files:[uploadedCalendarFile]})){
+     await navigator.share({title:'Calendario de Jolu',text:prompt,files:[uploadedCalendarFile]});
+     return;
+   }
+ }catch(e){
+   if(e && e.name==='AbortError')return;
+   console.warn('No se pudo compartir el archivo directamente',e);
+ }
+ try{
+   await navigator.clipboard.writeText(prompt);
+   alert('✅ Adjunta la misma foto/PDF en ChatGPT, pega el texto copiado y envíalo.');
+   window.open('https://chatgpt.com/','_blank');
+ }catch(e){
+   const area=document.createElement('textarea');area.value=prompt;document.body.appendChild(area);area.select();document.execCommand('copy');area.remove();
+   alert('✅ Adjunta la misma foto/PDF en ChatGPT y pega el texto copiado.');
+   window.open('https://chatgpt.com/','_blank');
+ }
+}
+
+function openChatGPT(){ sendToChatGPT(); }
+
+function importChatGPTResult(){
+const raw=document.getElementById('chatResult').value.trim();
+if(!raw){
+alert('Pega primero la respuesta de ChatGPT.');
+return;
+}
+
+try{
+const category=extractedPerson==='josefina'?'Colegio':'Sala cuna';
+let events=[];
+
+/* Formato sencillo: YYYY-MM-DD | actividad */
+raw.split(/\r?\n/).forEach(line=>{
+const clean=line.replace(/^[-•*]\s*/,'').trim();
+const m=clean.match(/^(\d{4}-\d{2}-\d{2})\s*\|\s*(.+)$/);
+if(m&&m[2].trim())events.push([m[1],category,m[2].trim()]);
+});
+
+/* Compatibilidad con respuestas JSON antiguas */
+if(!events.length){
+let cleaned=raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+const a=cleaned.indexOf('['),b=cleaned.lastIndexOf(']');
+if(a>=0&&b>a)cleaned=cleaned.slice(a,b+1);
+const parsed=JSON.parse(cleaned);
+if(!Array.isArray(parsed))throw new Error('Formato no reconocido.');
+events=parsed
+.filter(e=>e&&typeof e.date==='string'&&typeof e.text==='string')
+.filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e.date))
+.map(e=>[e.date,category,e.text.trim()])
+.filter(e=>e[2]);
+}
+
+if(!events.length)throw new Error('No encontré actividades con fecha.');
+
+ const ocrNorm=extractedCalendarText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ if(/\b04\s+septiembre\b/.test(ocrNorm) && events.some(e=>e[0]==='2026-09-01')){
+   const likely=events.filter(e=>e[0]==='2026-09-01'&&/peinad|chileno|locos|trenza|cinta|accesorio/i.test(e[2]));
+   if(likely.length) events=events.map(e=>likely.includes(e)?['2026-09-04',e[1],e[2]]:e);
+ }
+
+saveImportedEvents(events);
+render();
+renderCalendar();
+document.getElementById('chatResult').value='';
+document.getElementById('chatBox').classList.add('hidden');
+setUploadStatus('🎉 Listo. Se agregaron '+events.length+' actividades de '+(extractedPerson==='josefina'?'Josefina':'Luciana')+' a Jolu.');
+alert('✅ Calendario agregado a Jolu.');
+}catch(err){
+alert('❌ No pude leer la respuesta. Copia las líneas que te entregue ChatGPT y pégalas aquí.');
+console.error(err);
+}
+}
+
+function render(){
+const saved=getSavedEvents();
+const savedJosefina=saved.filter(e=>e.person==='josefina').map(e=>[e.date,'Colegio',e.text]);
+const savedLuciana=saved.filter(e=>e.person==='luciana').map(e=>[e.date,'Sala cuna',e.text]);
+
+document.getElementById('school').innerHTML=eventsHtml(allFixedEvents().filter(e=>e[1]==='Colegio'||e[1]==='Josefina').concat(savedJosefina));
+document.getElementById('schoolHome').innerHTML=eventsHtml(allFixedEvents().filter(e=>e[1]==='Colegio'||e[1]==='Josefina').concat(savedJosefina));
+document.getElementById('nursery').innerHTML=eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
+document.getElementById('nurseryHome').innerHTML=eventsHtml(allFixedEvents().filter(e=>e[1]==='Sala cuna').concat(savedLuciana));
+document.getElementById('routine').innerHTML=DATA.nursery_daily.concat(DATA.nursery_clothing,DATA.nursery_medications).map(x=>'<div class="item">• '+x+'</div>').join('');
+document.getElementById('shopping').innerHTML=list().map((x,i)=>'<div class="item"><div class="eventRow"><label class="eventText"><input type="checkbox" onchange="del('+i+')"> '+escapeHtml(x)+'</label><button class="deleteBtn" onclick="del('+i+')">🗑️ Borrar</button></div></div>').join('');
+renderCalendar();
+}
+
+function addItem(){
+const i=document.getElementById('newItem'),v=i.value.trim();
+if(!v)return;
+const l=list();l.push(v);
+localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));
+i.value='';render();
+}
+
+function del(i){
+const l=list();l.splice(i,1);
+localStorage.setItem(SHOPPING_KEY,JSON.stringify(l));
+render();
+}
+
+document.getElementById('question').addEventListener('keydown',e=>{
+if(e.key==='Enter')askJolu();
+});
+
+render();
+renderAvatar();
+startAssistantChecks();
+loadVoiceSettings();
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=populateVoiceSelect;}
+const savedAvatar=localStorage.getItem(AVATAR_KEY);
+if(savedAvatar)updateAvatarIcon(savedAvatar);
+</script>
+
+<div style="font-size:12px;opacity:.65;text-align:center;margin:8px 0 14px">
+También puedes decir: “Mañana debo comprar sal, aceite y arroz”.
+</div>
+
+</body>
+</html>
