@@ -16,6 +16,15 @@
 <!-- Librerías gratuitas: funcionan desde GitHub Pages -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+window.addEventListener('load', async ()=>{
+  if('serviceWorker' in navigator){
+    try{
+      await navigator.serviceWorker.register('./sw.js', {scope:'./'});
+    }catch(e){ console.warn('Jolu: no se pudo registrar el service worker', e); }
+  }
+});
+</script>
 
 <style>
 *{box-sizing:border-box}
@@ -120,7 +129,7 @@ nav button.active{background:linear-gradient(135deg,#6654df,#806be9);box-shadow:
 
 <section id="compras"><div class="card"><h2>🛒 Compras</h2><p class="small">Toca un producto cuando ya lo hayas comprado. También puedes decir: “Jolu, agrega pan a compras”.</p><div id="shopping"></div><div class="add"><input id="newItem" placeholder="Agregar producto"><button class="action" onclick="addItem()">Agregar</button><button class="mic" onclick="startShoppingListening()" aria-label="Agregar compra por voz">🎙️</button></div></div></section>
 
-<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><p class="small">Agrega avisos con fecha y hora. Jolu intentará avisarte y decirlos en voz alta mientras la app esté abierta.</p><div class="add" style="flex-wrap:wrap"><input id="reminderDate" type="date" style="flex:1;min-width:140px"><input id="reminderTime" type="time" value="07:59" style="flex:1;min-width:110px"><input id="reminderText" placeholder="¿Qué debe recordar Jolu?" style="flex:2;min-width:200px"><button class="action" onclick="addImportantReminder()">➕ Agregar aviso</button></div><div id="importantList" style="margin-top:12px"></div><div class="item"><span class="badge">FIJO · JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b><br><span class="small">Este aviso viene incluido en Jolu.</span></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
+<section id="recordatorios"><div class="card"><h2>🔔 Avisos importantes</h2><p class="small">Agrega avisos con fecha y hora. Jolu te avisará mientras esté activa. Para avisos con Jolu completamente cerrada se necesita activar notificaciones push en el servidor.</p><div class="add" style="flex-wrap:wrap"><input id="reminderDate" type="date" style="flex:1;min-width:140px"><input id="reminderTime" type="time" value="07:59" style="flex:1;min-width:110px"><input id="reminderText" placeholder="¿Qué debe recordar Jolu?" style="flex:2;min-width:200px"><button class="action" onclick="addImportantReminder()">➕ Agregar aviso</button></div><div id="importantList" style="margin-top:12px"></div><div class="item"><span class="badge">FIJO · JUEVES Y VIERNES · 07:59</span><br><b>Pedir estacionamiento</b><br><span class="small">Este aviso viene incluido en Jolu.</span></div><p class="small">También puedes decir: “mañana debo comprar pan”, “6 de septiembre cumpleaños de Josefina” o “borra la actividad de mañana de Josefina”.</p></div></section>
 
 <section id="calendario">
 <div class="card">
@@ -196,7 +205,7 @@ nursery_clothing:['2 o 3 mudas completas según clima'],
 nursery_medications:['Antipirético SOS','Termómetro','Crema para coceduras']
 };
 
-const IMPORTED_EVENTS_KEY='natImportedEventsV1';
+const SHOPPING_KEY='natShoppingV2'; const IMPORTED_EVENTS_KEY='natImportedEventsV1';
 const USER_EVENTS_KEY='natAgendaEventsV1';
 const AVATAR_KEY='natAvatarV1';
 const NOTIFY_KEY='natNotifyV1';
